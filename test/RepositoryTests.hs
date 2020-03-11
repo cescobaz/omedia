@@ -29,13 +29,13 @@ defaultGetPhotosTest m =
   where
     expectedPhotos =
         [ Photo { Photo.id   = 2
-                , filePath   = "/ciao.jpeg"
+                , filePath   = "/ciao-2.jpg"
                 , importDate = Nothing
                 , date       = Nothing
                 , tags       = []
                 }
-        , Photo { Photo.id   = 2
-                , filePath   = "/ciao.jpeg"
+        , Photo { Photo.id   = 1
+                , filePath   = "/ciao.jpg"
                 , importDate = Nothing
                 , date       = Nothing
                 , tags       = []
