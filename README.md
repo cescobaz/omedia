@@ -3,9 +3,7 @@ organize your photos
 
 ## Build and Run
 ```bash
-stack setup
-stack build
-stack exec ophoto-exe
+cabal v2-run
 ```
 
 ## Files structure
