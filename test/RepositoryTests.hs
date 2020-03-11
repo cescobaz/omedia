@@ -16,8 +16,8 @@ tests = testGroup "Repository" [ readSomePhotos ]
 
 readSomePhotos :: TestTree
 readSomePhotos = withResource (Repository.create "./test/some-photos.sqlite3")
-                              (Repository.release)
-                              (defaultGetPhotosTest)
+                              Repository.release
+                              defaultGetPhotosTest
 
 defaultGetPhotosTest :: IO Repository -> TestTree
 defaultGetPhotosTest m =
