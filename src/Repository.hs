@@ -1,6 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Repository ( Repository, create, release, MediaQuery(..), getMedia ) where
+module Repository
+    ( Repository
+    , create
+    , release
+    , MediaQuery(..)
+    , defaultMediaQuery
+    , getMedia
+    ) where
 
 import           Data.Text
 
@@ -15,10 +22,19 @@ data MediaQuery = MediaQuery { offset :: Int, limit :: Int }
 create :: Text -> IO Repository
 create path = do
     database <- open path
+    let initScript = "create table if not exists photos (\
+                     \ id integer primary key autoincrement,\
+                     \ file_path text not null unique\
+                     \ );\
+                     \ "
+    exec database initScript
     return $ Repository database
 
 release :: Repository -> IO ()
 release = close . database
+
+defaultMediaQuery :: MediaQuery
+defaultMediaQuery = MediaQuery { offset = 0, limit = 25 }
 
 getMedia :: Repository -> MediaQuery -> IO [Media]
 getMedia repository query = do
