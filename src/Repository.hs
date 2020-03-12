@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Repository where
+module Repository ( Repository, create, release, getPhotos ) where
 
 import           Data.Text
 
@@ -16,7 +16,7 @@ create path = do
     return $ Repository database
 
 release :: Repository -> IO ()
-release repository = close $ database repository
+release = close . database
 
 getPhotos :: Repository -> IO [Photo]
 getPhotos repository = do
