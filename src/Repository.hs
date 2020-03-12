@@ -23,7 +23,8 @@ release = close . database
 getMedia :: Repository -> MediaQuery -> IO [Media]
 getMedia repository query = do
     let database = Repository.database repository
-    let sQuery = "select * from photos order by id desc limit ? offset ?"
+    let sQuery =
+            "select id, file_path from photos order by id desc limit ? offset ?"
     statement <- prepare database sQuery
     bindInt statement 1 (limit query)
     bindInt statement 2 (offset query)
