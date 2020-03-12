@@ -1,14 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Repository ( Repository, create, release, getPhotos ) where
+module Repository ( Repository, create, release, MediaQuery(..), getMedia ) where
 
 import           Data.Text
 
 import           Database.SQLite3
 
-import           Photo
+import           Media
 
 newtype Repository = Repository { database :: Database }
+
+data MediaQuery = MediaQuery { offset :: Int, limit :: Int }
 
 create :: Text -> IO Repository
 create path = do
@@ -18,25 +20,28 @@ create path = do
 release :: Repository -> IO ()
 release = close . database
 
-getPhotos :: Repository -> IO [Photo]
-getPhotos repository = do
+getMedia :: Repository -> MediaQuery -> IO [Media]
+getMedia repository query = do
     let database = Repository.database repository
-    statement <- prepare database "select * from photos order by id desc"
+    let sQuery = "select * from photos order by id desc limit ? offset ?"
+    statement <- prepare database sQuery
+    bindInt statement 1 (limit query)
+    bindInt statement 2 (offset query)
     result <- step statement
-    photos <- readPhotos statement result []
+    photos <- readMedia statement result []
     finalize statement
     return photos
 
-readPhotos :: Statement -> StepResult -> [Photo] -> IO [Photo]
-readPhotos statement Done photos = return photos
-readPhotos statement Row photos = do
+readMedia :: Statement -> StepResult -> [Media] -> IO [Media]
+readMedia statement Done photos = return photos
+readMedia statement Row photos = do
     id <- columnInt64 statement 0
     filePath <- columnText statement 1
-    let photo = Photo { Photo.id   = fromIntegral id
+    let photo = Media { Media.id   = fromIntegral id
                       , filePath   = unpack filePath
                       , importDate = Nothing
                       , date       = Nothing
                       , tags       = []
                       }
     result <- step statement
-    readPhotos statement result (photos ++ [ photo ])
+    readMedia statement result (photos ++ [ photo ])

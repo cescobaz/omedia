@@ -4,7 +4,7 @@ module RepositoryTests ( tests ) where
 
 import           Data.Text
 
-import           Photo
+import           Media
 
 import           Repository
 
@@ -12,32 +12,55 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 
 tests :: TestTree
-tests = testGroup "Repository" [ readSomePhotos ]
+tests = testGroup "Repository" [ readSomeMedia ]
 
-readSomePhotos :: TestTree
-readSomePhotos = withResource (Repository.create "./test/some-photos.sqlite3")
-                              Repository.release
-                              defaultGetPhotosTest
+readSomeMedia :: TestTree
+readSomeMedia =
+    withResource (Repository.create "./test/some-photos.sqlite3")
+                 Repository.release
+                 (\r ->
+                  testGroup "readSomeMedia"
+                            [ defaultGetMediaTest r, getMediaWithLimitTest r ])
 
-defaultGetPhotosTest :: IO Repository -> TestTree
-defaultGetPhotosTest m =
-    testCase "defaultGetPhotosTest"
+defaultGetMediaTest :: IO Repository -> TestTree
+defaultGetMediaTest m =
+    testCase "defaultGetMediaTest"
              (do
                   repository <- m
-                  photos <- Repository.getPhotos repository
-                  expectedPhotos @=? photos)
+                  photos <- Repository.getMedia repository query
+                  expectedMedia @=? photos)
   where
-    expectedPhotos =
-        [ Photo { Photo.id   = 2
+    query = MediaQuery { offset = 0, limit = 50 }
+
+    expectedMedia =
+        [ Media { Media.id   = 2
                 , filePath   = "/ciao-2.jpg"
                 , importDate = Nothing
                 , date       = Nothing
                 , tags       = []
                 }
-        , Photo { Photo.id   = 1
+        , Media { Media.id   = 1
                 , filePath   = "/ciao.jpg"
                 , importDate = Nothing
                 , date       = Nothing
                 , tags       = []
                 }
         ]
+
+getMediaWithLimitTest :: IO Repository -> TestTree
+getMediaWithLimitTest m =
+    testCase "getMediaWithLimitTest"
+             (do
+                  repository <- m
+                  photos <- Repository.getMedia repository query
+                  expectedMedia @=? photos)
+  where
+    query = MediaQuery { offset = 0, limit = 1 }
+
+    expectedMedia = [ Media { Media.id   = 2
+                            , filePath   = "/ciao-2.jpg"
+                            , importDate = Nothing
+                            , date       = Nothing
+                            , tags       = []
+                            }
+                    ]
