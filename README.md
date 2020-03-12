@@ -1,5 +1,5 @@
-# ophoto
-organize your photos
+# omedia
+organize your media
 
 ## Build and Run
 ```bash
@@ -7,12 +7,12 @@ cabal v2-run
 ```
 
 ## Files structure
-photos/
+media/
 thumbnails/
 to-import/
 database.sqlite3
 
 ## API
-GET `base-path`/photos/?sortBy=`field`&sortOrder=`ascending|descending`
-GET `base-path`/photos/`photo-id`
-POST `base-path`/photos/
+GET `base-path`/media/?sortBy=`field`&sortOrder=`ascending|descending`
+GET `base-path`/media/`media-id`
+POST `base-path`/media/
