@@ -2,4 +2,4 @@
 
 DIR=$(realpath $(dirname $0))
 
-$DIR/macos-watch-and-cabal.sh test
+$DIR/macos-watch-and-cabal.sh build
