@@ -62,3 +62,4 @@ readMedia statement Row photos = do
                       }
     result <- step statement
     readMedia statement result (photos ++ [ photo ])
+

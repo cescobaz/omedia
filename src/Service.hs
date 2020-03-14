@@ -19,47 +19,24 @@ import           Web.Scotty
 
 instance ToJSON Media
 
-data Options = Options { port           :: Port
-                       , databasePath   :: Text
-                       , mediaPath      :: Text
-                       , thumbnailsPath :: Text
-                       , toImportPath   :: Text
-                       }
+data Options = Options { port :: Port, homePath :: Text }
 
 run :: Service.Options -> IO ()
-run options@(Service.Options port
-                             databasePath
-                             mediaPath
-                             thumbnailsPath
-                             toImportPath) = do
+run options@(Service.Options port homePath) = do
+    let databasePath = Data.Text.concat [ homePath, "/database.sqlite3" ]
     repository <- Repository.create databasePath
     scotty port $ do
         middleware logStdoutDev
-        get "/-/ready" $ json ([ "ciao" ] :: [String])
+        middleware $ staticPolicy $ resourcesPolicy homePath
         get "/api/media/" $ do
             let query = Repository.defaultMediaQuery
             media <- liftIO $ Repository.getMedia repository query
             json media
-        middleware $ staticPolicy (policy $ rewrite options)
 
-rewrite :: Service.Options -> (String -> Maybe String)
-rewrite options path = rewritePath options $ Data.Text.breakOn "/" (pack path)
+resourcesPolicy :: Text -> Policy
+resourcesPolicy homePath = ((hasPrefix "media") <|> (hasPrefix "thumbnails")
+                            <|> (hasPrefix "to-import"))
+    >-> (addBase $ unpack homePath)
 
-rewritePath :: Service.Options -> (Text, Text) -> Maybe String
-rewritePath options (prefix, path) = createPath options (basePath prefix) path
-
-createPath :: Service.Options
-           -> (Maybe (Service.Options -> Text))
-           -> Text
-           -> Maybe String
-createPath _ Nothing _ = Nothing
-createPath options (Just getBasePath) path = Just $ unpack $
-    Data.Text.concat [ (getBasePath options), "/", path ]
-
-basePath :: Text -> Maybe (Service.Options -> Text)
-basePath "media" = Just mediaPath
-basePath "thumbnails" = Just thumbnailsPath
-basePath "to-import" = Just toImportPath
-basePath _ = Nothing
 
 
