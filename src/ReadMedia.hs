@@ -4,7 +4,6 @@ module ReadMedia ( getApiMedia ) where
 
 import           Control.Monad.IO.Class
 
-import           Data.Aeson             ( ToJSON )
 import           Data.Text
 
 import           Database.SQLite3
@@ -16,8 +15,6 @@ import           Repository
 import           Web.Scotty
 
 data MediaQuery = MediaQuery { offset :: Int, limit :: Int }
-
-instance ToJSON Media
 
 getApiMedia :: Repository -> ScottyM ()
 getApiMedia repository = get "/api/media/" $ do
