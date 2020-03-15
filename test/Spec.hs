@@ -1,3 +1,5 @@
+module Main where
+
 import           ReadMediaTests
 
 import           Test.Tasty
