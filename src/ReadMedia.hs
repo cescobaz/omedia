@@ -4,18 +4,14 @@ module ReadMedia ( getApiMedia ) where
 
 import           Control.Monad.IO.Class
 
-import           Data.Aeson                           ( FromJSON, ToJSON )
-import           Data.Text
+import           Data.Aeson               ( ToJSON )
 import           Data.Text
 
 import           Database.SQLite3
 
 import           Media
-import           Media
 
-import           Network.Wai.Handler.Warp             ( Port )
-import           Network.Wai.Middleware.RequestLogger
-import           Network.Wai.Middleware.Static
+import           Network.Wai.Handler.Warp ( Port )
 
 import           Repository
 

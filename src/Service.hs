@@ -4,10 +4,9 @@ module Service where
 
 import           Control.Monad.IO.Class
 
-import           Data.Aeson                           ( FromJSON, ToJSON )
 import           Data.Text
 
-import           Media
+import           ImportMedia
 
 import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
@@ -29,6 +28,7 @@ run options@(Service.Options port homePath) = do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath
         getApiMedia repository
+        postApiMedia repository homePath
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath =

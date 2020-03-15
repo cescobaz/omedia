@@ -22,6 +22,7 @@ library
       Service
       Media
       ReadMedia
+      ImportMedia
   hs-source-dirs:
       src
   build-depends:
@@ -33,6 +34,11 @@ library
       , warp ==3.3.9
       , wai-middleware-static ==0.8.3
       , wai-extra ==3.0.29.1
+      , bytestring ==0.10.8.2
+      , multipart ==0.1.2
+      , uuid ==1.3.13
+      , directory ==1.3.6.0
+      , hashable ==1.3.0.0
   default-language:    Haskell2010
 
 executable omedia-exe
