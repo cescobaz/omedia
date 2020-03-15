@@ -23,6 +23,7 @@ library
       Media
       ReadMedia
       ImportMedia
+      ReadToImport
   hs-source-dirs:
       src
   build-depends:

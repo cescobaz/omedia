@@ -14,6 +14,8 @@ import           Network.Wai.Middleware.Static
 
 import           ReadMedia
 
+import           ReadToImport
+
 import           Repository
 
 import           Web.Scotty
@@ -29,6 +31,7 @@ run options@(Service.Options port homePath) = do
         middleware $ staticPolicy $ resourcesPolicy homePath
         getApiMedia repository
         postApiMedia repository homePath
+        getToImport repository homePath
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath =
