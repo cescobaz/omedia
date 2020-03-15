@@ -31,8 +31,9 @@ run options@(Service.Options port homePath) = do
         getApiMedia repository
 
 resourcesPolicy :: Text -> Policy
-resourcesPolicy homePath = hasPrefix "media" <|> hasPrefix "thumbnails"
-    <|> hasPrefix "to-import" >-> addBase (unpack homePath)
+resourcesPolicy homePath =
+    (hasPrefix "media" <|> hasPrefix "thumbnails" <|> hasPrefix "to-import")
+    >-> addBase (unpack homePath)
 
 
 
