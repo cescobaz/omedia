@@ -1,3 +1,3 @@
-# Changelog for ophoto
+# Changelog for omedia
 
 ## Unreleased changes

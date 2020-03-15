@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module RepositoryTests ( tests ) where
+module ReadMediaTests ( tests ) where
 
 import           Control.Exception
 
