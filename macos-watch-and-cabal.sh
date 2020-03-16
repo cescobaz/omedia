@@ -9,11 +9,15 @@ DIR=$(realpath $(dirname $0))
 
 while true; do
   cabal "$@" &
-  CHILD_PID=$!
+  PID=$!
+  echo "PROCESS: $PID"
 
   fswatch --one-event --latency 2 --exclude '.*' --include '.*\.hs$' --include '.*\.cabal$' "$DIR"
-  kill -9 $CHILD_PID
-  fg
+  echo "killing $PID"
+  kill $PID
+  while kill -0 $PID; do
+    sleep 1
+  done
 
   sleep 1
   EXITCODE=$?
