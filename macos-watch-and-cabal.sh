@@ -1,18 +1,23 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 ACTION"
+if [ $# -e 0 ]; then
+  echo "Usage: $0 ACTION ARGS"
   exit 1
 fi
 
 DIR=$(realpath $(dirname $0))
 
 while true; do
-  cabal $1
+  cabal "$@" &
+  CHILD_PID=$!
 
   fswatch --one-event --latency 2 --exclude '.*' --include '.*\.hs$' --include '.*\.cabal$' "$DIR"
+  kill -9 $CHILD_PID
+  fg
 
-  if [ $? -ne 0 ]; then
-    exit $?
+  sleep 1
+  EXITCODE=$?
+  if [ $EXITCODE -ne 0 ]; then
+    exit $EXITCODE
   fi
 done

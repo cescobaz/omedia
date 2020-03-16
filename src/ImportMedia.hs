@@ -2,6 +2,7 @@
 
 module ImportMedia ( postApiMedia ) where
 
+import           Control.Monad.Fail       as M
 import           Control.Monad.IO.Class
 
 import           Data.ByteString          as B
@@ -24,23 +25,25 @@ import           Web.Scotty
 
 postApiMedia :: Repository -> ST.Text -> ScottyM ()
 postApiMedia repository homePath = post "/api/media/" $ do
-    contentType <- header "content-type"
-    case contentType of
-        Nothing -> raise "no content-type"
-        Just contentType -> do
-            contentType <- parseContentType $ LT.unpack contentType
-            let boundary = L.find (\(key, _) -> key == "boundary")
-                                  (ctParameters contentType)
-            case boundary of
-                Nothing -> raise "missing boundary"
-                Just (_, boundary) -> do
-                    body <- body
-                    files <- liftIO $ parseBody boundary body homePath
-                    json files
+    boundary <- boundary
+    body <- body
+    files <- liftIO $ parseBody boundary body homePath
+    json files
 
-parseBody :: String -> LB.ByteString -> ST.Text -> IO [ST.Text]
+boundary :: ActionM ST.Text
+boundary = do
+    contentType <- header "content-type"
+    contentType <- justOrFail contentType "no content-type"
+    contentType <- parseContentType $ LT.unpack contentType
+    let boundary = L.find (\(key, _) -> key == "boundary")
+                          (ctParameters contentType)
+    (_, boundary) <- justOrFail boundary "missing boundary"
+    return $ ST.pack boundary
+
+parseBody :: ST.Text -> LB.ByteString -> ST.Text -> IO [ST.Text]
 parseBody boundary body homePath = do
-    let multipart@(MultiPart parts) = parseMultipartBody boundary body
+    let multipart@(MultiPart parts) =
+            parseMultipartBody (ST.unpack boundary) body
     parseBodyParts homePath multipart
 
 parseBodyParts :: ST.Text -> MultiPart -> IO [ST.Text]
@@ -70,12 +73,18 @@ writeFile homePath (Just suggestedFilename) byteString = do
             LB.writeFile filePath byteString
             return suggestedFilename
         True -> do
-            fileData <- LB.readFile filePath
-            let existingHash = hash fileData
-            let incomingHash = hash byteString
-            case (existingHash == incomingHash) of
-                True -> do
-                    LB.writeFile filePath byteString
-                    return suggestedFilename
+            isHashEqual <- isHashEqual byteString filePath
+            case (isHashEqual) of
+                True -> return suggestedFilename
                 False -> ImportMedia.writeFile homePath Nothing byteString
 
+isHashEqual :: LB.ByteString -> FilePath -> IO Bool
+isHashEqual byteString filePath = do
+    fileData <- LB.readFile filePath
+    let existingHash = hash fileData
+    let incomingHash = hash byteString
+    return (existingHash == incomingHash)
+
+justOrFail :: MonadFail m => Maybe a -> String -> m a
+justOrFail (Just value) _ = return value
+justOrFail Nothing error = M.fail error
