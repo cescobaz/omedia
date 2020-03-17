@@ -6,8 +6,6 @@ import           Control.Monad.IO.Class
 
 import           Data.Text
 
-import           ImportMedia
-
 import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
@@ -17,6 +15,8 @@ import           ReadMedia
 import           ReadToImport
 
 import           Repository
+
+import           UploadMedia
 
 import           Web.Scotty
 
@@ -30,7 +30,7 @@ run options@(Service.Options port homePath) = do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath
         getApiMedia repository
-        postApiMedia repository homePath
+        postToImport repository homePath
         getToImport repository homePath
 
 resourcesPolicy :: Text -> Policy

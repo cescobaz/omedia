@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module ImportMedia ( postApiMedia ) where
+module UploadMedia ( postToImport ) where
 
 import           Control.Exception        as E
 import           Control.Monad.Fail       as M
@@ -42,8 +42,8 @@ data Result = Result { result      :: ST.Text
 
 instance ToJSON Result
 
-postApiMedia :: Repository -> ST.Text -> ScottyM ()
-postApiMedia repository homePath = post "/api/media/" $ do
+postToImport :: Repository -> ST.Text -> ScottyM ()
+postToImport repository homePath = post "/to-import/" $ do
     boundary <- boundary
     body <- body
     results <- liftIO $ parseBody boundary body homePath
@@ -97,7 +97,7 @@ parseContentTypeAndWrite
     -> IO Result
 parseContentTypeAndWrite homePath headers byteString name filename = do
     contentType <- checkContentType headers
-    (result, path) <- ImportMedia.writeFile homePath byteString filename
+    (result, path) <- UploadMedia.writeFile homePath byteString filename
     return Result { name        = fmap ST.pack name
                   , filename    = fmap ST.pack filename
                   , contentType = Just $ ST.pack contentType
@@ -117,7 +117,7 @@ handleException name filename exception =
 writeFile :: ST.Text -> LB.ByteString -> Maybe String -> IO (ST.Text, ST.Text)
 writeFile homePath byteString Nothing = do
     uuid <- nextRandom
-    ImportMedia.writeFile homePath byteString (Just $ Data.UUID.toString uuid)
+    UploadMedia.writeFile homePath byteString (Just $ Data.UUID.toString uuid)
 writeFile homePath byteString (Just suggestedFilename) = do
     let path = "/to-import/" ++ suggestedFilename
     let filePath = (ST.unpack homePath) ++ path
@@ -130,7 +130,7 @@ writeFile homePath byteString (Just suggestedFilename) = do
             isHashEqual <- isHashEqual byteString filePath
             case (isHashEqual) of
                 True -> return ("skipped because exists", ST.pack path)
-                False -> ImportMedia.writeFile homePath byteString Nothing
+                False -> UploadMedia.writeFile homePath byteString Nothing
 
 isHashEqual :: LB.ByteString -> FilePath -> IO Bool
 isHashEqual byteString filePath = do

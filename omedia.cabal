@@ -23,7 +23,7 @@ library
       Service
       Media
       ReadMedia
-      ImportMedia
+      UploadMedia
       ReadToImport
   hs-source-dirs:
       src
