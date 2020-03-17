@@ -76,7 +76,7 @@ checkContentType headers = do
     contentType <- getContentType headers
     let contentType' = ctType contentType
     case (isContentTypeAllowed contentType') of
-        False -> M.fail "content type not supported"
+        False -> M.fail $ "content type not supported: " ++ contentType'
         True -> return contentType'
 
 parseBodyPart :: ST.Text -> BodyPart -> IO Result
