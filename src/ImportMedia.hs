@@ -19,6 +19,8 @@ import           Data.UUID.V4
 
 import           GHC.Generics
 
+import           HLib
+
 import           Media
 
 import           Network.Multipart
@@ -136,7 +138,3 @@ isHashEqual byteString filePath = do
     let existingHash = hash fileData
     let incomingHash = hash byteString
     return (existingHash == incomingHash)
-
-justOrFail :: MonadFail m => Maybe a -> String -> m a
-justOrFail (Just value) _ = return value
-justOrFail Nothing error = M.fail error
