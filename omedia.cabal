@@ -19,12 +19,14 @@ extra-source-files:  ChangeLog.md, README.md
 library
   exposed-modules:
       HLib
+      Folders
       Repository
       Service
       Media
       ReadMedia
       UploadMedia
       ReadToImport
+      ImportMedia
   hs-source-dirs:
       src
   build-depends:
