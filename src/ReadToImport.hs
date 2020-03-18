@@ -12,6 +12,7 @@ import           Media
 import           Repository
 
 import           System.Directory
+import           System.FilePath
 
 import           Web.Scotty
 
@@ -24,7 +25,7 @@ files :: FilePath -> IO [Media]
 files path = do
     entries <- listDirectory path
     return $ Data.List.map ReadToImport.map $
-        Data.List.filter (Media.isSuffixAllowed . extension) entries
+        Data.List.filter (Media.isSuffixAllowed . takeExtension) entries
 
 map :: FilePath -> Media
 map filePath = Media { Media.id   = 0
@@ -33,10 +34,3 @@ map filePath = Media { Media.id   = 0
                      , date       = Nothing
                      , tags       = []
                      }
-
-extension :: FilePath -> String
-extension path = unpack e
-  where
-    (_, e) = ST.breakOnEnd "." (pack path)
-
-

@@ -41,6 +41,7 @@ library
       , uuid ==1.3.13
       , directory ==1.3.6.0
       , hashable ==1.3.0.0
+      , filepath ==1.4.2.1
   default-language:    Haskell2010
 
 executable omedia-exe

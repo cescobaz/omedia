@@ -23,7 +23,7 @@ isContentTypeAllowed :: String -> Bool
 isContentTypeAllowed t = elem t allowedContentType
 
 isSuffixAllowed :: String -> Bool
-isSuffixAllowed "jpeg" = True
-isSuffixAllowed "jpg" = True
-isSuffixAllowed "png" = True
+isSuffixAllowed ".jpeg" = True
+isSuffixAllowed ".jpg" = True
+isSuffixAllowed ".png" = True
 isSuffixAllowed _ = False

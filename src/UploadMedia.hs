@@ -29,6 +29,7 @@ import           Network.Wai.Handler.Warp ( Port )
 import           Repository
 
 import           System.Directory
+import           System.FilePath.Posix
 
 import           Web.Scotty
 
@@ -54,9 +55,8 @@ boundary = do
     contentType <- header "content-type"
     contentType <- justOrFail contentType "no content-type"
     contentType <- parseContentType $ LT.unpack contentType
-    let boundary = L.find (\(key, _) -> key == "boundary")
-                          (ctParameters contentType)
-    (_, boundary) <- justOrFail boundary "missing boundary"
+    let boundary = findValue "boundary" (ctParameters contentType)
+    boundary <- justOrFail boundary "missing boundary"
     return $ ST.pack boundary
 
 parseBody :: ST.Text -> LB.ByteString -> ST.Text -> IO [Result]
@@ -97,7 +97,8 @@ parseContentTypeAndWrite
     -> IO Result
 parseContentTypeAndWrite homePath headers byteString name filename = do
     contentType <- checkContentType headers
-    (result, path) <- UploadMedia.writeFile homePath byteString filename
+    (result, path)
+        <- UploadMedia.writeFile homePath byteString filename Nothing
     return Result { name        = fmap ST.pack name
                   , filename    = fmap ST.pack filename
                   , contentType = Just $ ST.pack contentType
@@ -114,11 +115,24 @@ handleException name filename exception =
                   , result      = ST.pack $ displayException exception
                   }
 
-writeFile :: ST.Text -> LB.ByteString -> Maybe String -> IO (ST.Text, ST.Text)
-writeFile homePath byteString Nothing = do
+writeFile :: ST.Text
+          -> LB.ByteString
+          -> Maybe String
+          -> Maybe String
+          -> IO (ST.Text, ST.Text)
+writeFile homePath byteString Nothing Nothing = do
     uuid <- nextRandom
-    UploadMedia.writeFile homePath byteString (Just $ Data.UUID.toString uuid)
-writeFile homePath byteString (Just suggestedFilename) = do
+    UploadMedia.writeFile homePath
+                          byteString
+                          (Just $ Data.UUID.toString uuid)
+                          Nothing
+writeFile homePath byteString Nothing (Just extension) = do
+    uuid <- nextRandom
+    UploadMedia.writeFile homePath
+                          byteString
+                          (Just $ (Data.UUID.toString uuid) ++ extension)
+                          Nothing
+writeFile homePath byteString (Just suggestedFilename) _ = do
     let path = "/to-import/" ++ suggestedFilename
     let filePath = (ST.unpack homePath) ++ path
     exists <- doesFileExist filePath
@@ -130,7 +144,11 @@ writeFile homePath byteString (Just suggestedFilename) = do
             isHashEqual <- isHashEqual byteString filePath
             case (isHashEqual) of
                 True -> return ("skipped because exists", ST.pack path)
-                False -> UploadMedia.writeFile homePath byteString Nothing
+                False -> UploadMedia.writeFile homePath
+                                               byteString
+                                               Nothing
+                                               (Just $
+                                                takeExtension suggestedFilename)
 
 isHashEqual :: LB.ByteString -> FilePath -> IO Bool
 isHashEqual byteString filePath = do
