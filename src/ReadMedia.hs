@@ -43,12 +43,7 @@ readMedia statement Done photos = return photos
 readMedia statement Row photos = do
     id <- columnInt64 statement 0
     filePath <- columnText statement 1
-    let photo = Media { Media.id   = fromIntegral id
-                      , filePath   = unpack filePath
-                      , importDate = Nothing
-                      , date       = Nothing
-                      , tags       = []
-                      }
+    let photo = Media.minimalMedia (fromIntegral id) (unpack filePath)
     result <- step statement
     readMedia statement result (photos ++ [ photo ])
 

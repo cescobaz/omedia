@@ -61,6 +61,7 @@ test-suite omedia-tests
       test
   other-modules:
       ReadMediaTests
+      CreateMediaFromFile
   type:                exitcode-stdio-1.0
   build-depends: 
       base >=4.12 && <4.13
