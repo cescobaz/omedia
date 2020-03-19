@@ -10,6 +10,8 @@ import           Media
 
 import           Prelude           hiding ( catch )
 
+import           ReadMedia
+
 import           Repository
 
 import           System.Directory
@@ -34,12 +36,12 @@ createEmptyDatabase =
                  (\repository -> do
                       Repository.release repository
                       removeIfExists "./test/new-empty.sqlite3")
-                 (\m -> testCase "createEmptyDatabase"
-                                 (do
-                                      repository <- m
-                                      photos <- Repository.getMedia repository
-                                                                    Repository.defaultMediaQuery
-                                      [] @=? photos))
+                 (\m ->
+                  testCase "createEmptyDatabase"
+                           (do
+                                repository <- m
+                                photos <- getMedia repository defaultMediaQuery
+                                [] @=? photos))
 
 readSomeMedia :: TestTree
 readSomeMedia =
@@ -50,44 +52,25 @@ readSomeMedia =
                             [ defaultGetMediaTest r, getMediaWithLimitTest r ])
 
 defaultGetMediaTest :: IO Repository -> TestTree
-defaultGetMediaTest m =
-    testCase "defaultGetMediaTest"
-             (do
-                  repository <- m
-                  photos <- Repository.getMedia repository query
-                  expectedMedia @=? photos)
+defaultGetMediaTest m = testCase "defaultGetMediaTest"
+                                 (do
+                                      repository <- m
+                                      photos <- getMedia repository query
+                                      expectedMedia @=? photos)
   where
     query = MediaQuery { offset = 0, limit = 50 }
 
     expectedMedia =
-        [ Media { Media.id   = 2
-                , filePath   = "/ciao-2.jpg"
-                , importDate = Nothing
-                , date       = Nothing
-                , tags       = []
-                }
-        , Media { Media.id   = 1
-                , filePath   = "/ciao.jpg"
-                , importDate = Nothing
-                , date       = Nothing
-                , tags       = []
-                }
-        ]
+        [ minimalMedia 2 "/ciao-2.jpg", minimalMedia 1 "/ciao.jpg" ]
 
 getMediaWithLimitTest :: IO Repository -> TestTree
 getMediaWithLimitTest m =
     testCase "getMediaWithLimitTest"
              (do
                   repository <- m
-                  photos <- Repository.getMedia repository query
+                  photos <- getMedia repository query
                   expectedMedia @=? photos)
   where
     query = MediaQuery { offset = 0, limit = 1 }
 
-    expectedMedia = [ Media { Media.id   = 2
-                            , filePath   = "/ciao-2.jpg"
-                            , importDate = Nothing
-                            , date       = Nothing
-                            , tags       = []
-                            }
-                    ]
+    expectedMedia = [ minimalMedia 2 "/ciao-2.jpg" ]

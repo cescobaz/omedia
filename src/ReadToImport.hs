@@ -18,7 +18,7 @@ import           Web.Scotty
 
 getToImport :: Repository -> ST.Text -> ScottyM ()
 getToImport repository homePath = get "/api/to-import/" $ do
-    files <- liftIO $ ReadToImport.files ((ST.unpack homePath) ++ "/to-import")
+    files <- liftIO $ ReadToImport.files (ST.unpack homePath ++ "/to-import")
     json files
 
 files :: FilePath -> IO [Media]
@@ -28,9 +28,4 @@ files path = do
         Data.List.filter (Media.isSuffixAllowed . takeExtension) entries
 
 map :: FilePath -> Media
-map filePath = Media { Media.id   = 0
-                     , filePath   = "/to-import/" ++ filePath
-                     , importDate = Nothing
-                     , date       = Nothing
-                     , tags       = []
-                     }
+map filePath = minimalMedia 0 ("/to-import/" ++ filePath)

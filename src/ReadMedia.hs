@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadMedia ( getApiMedia ) where
+module ReadMedia ( getApiMedia, MediaQuery(..), getMedia, defaultMediaQuery ) where
 
 import           Control.Monad.IO.Class
 

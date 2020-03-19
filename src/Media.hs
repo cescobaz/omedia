@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module Media ( Media(..), isContentTypeAllowed, isSuffixAllowed ) where
+module Media ( Media(..), minimalMedia, isContentTypeAllowed, isSuffixAllowed ) where
 
 import           Data.Aeson   ( ToJSON )
 
@@ -15,6 +15,15 @@ data Media = Media { id         :: Int
     deriving ( Eq, Show, Generic )
 
 instance ToJSON Media
+
+minimalMedia :: Int -> String -> Media
+minimalMedia id filePath =
+    Media { Media.id   = id
+          , filePath   = filePath
+          , importDate = Nothing
+          , date       = Nothing
+          , tags       = []
+          }
 
 allowedContentType :: [String]
 allowedContentType = [ "image" ]
