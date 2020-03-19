@@ -69,15 +69,15 @@ parseBodyParts homePath (MultiPart bodyParts) =
     mapM (parseBodyPart homePath) bodyParts
 
 findValue :: String -> [(String, String)] -> Maybe String
-findValue key = (fmap snd) . (L.find (\(k, _) -> k == key))
+findValue key = fmap snd . L.find (\(k, _) -> k == key)
 
 checkContentType :: Headers -> IO String
 checkContentType headers = do
     contentType <- getContentType headers
     let contentType' = ctType contentType
-    case (isContentTypeAllowed contentType') of
-        False -> M.fail $ "content type not supported: " ++ contentType'
-        True -> return contentType'
+    if isContentTypeAllowed contentType'
+        then return contentType'
+        else M.fail $ "content type not supported: " ++ contentType'
 
 parseBodyPart :: ST.Text -> BodyPart -> IO Result
 parseBodyPart homePath (BodyPart headers byteString) = do
@@ -130,25 +130,25 @@ writeFile homePath byteString Nothing (Just extension) = do
     uuid <- nextRandom
     UploadMedia.writeFile homePath
                           byteString
-                          (Just $ (Data.UUID.toString uuid) ++ extension)
+                          (Just $ Data.UUID.toString uuid ++ extension)
                           Nothing
 writeFile homePath byteString (Just suggestedFilename) _ = do
     let path = "/to-import/" ++ suggestedFilename
-    let filePath = (ST.unpack homePath) ++ path
+    let filePath = ST.unpack homePath ++ path
     exists <- doesFileExist filePath
-    case exists of
-        False -> do
+    if not exists
+        then do
             LB.writeFile filePath byteString
             return ("ok", ST.pack path)
-        True -> do
+        else do
             isHashEqual <- isHashEqual byteString filePath
-            case (isHashEqual) of
-                True -> return ("skipped because exists", ST.pack path)
-                False -> UploadMedia.writeFile homePath
-                                               byteString
-                                               Nothing
-                                               (Just $
-                                                takeExtension suggestedFilename)
+            if isHashEqual
+                then return ("skipped because exists", ST.pack path)
+                else UploadMedia.writeFile homePath
+                                           byteString
+                                           Nothing
+                                           (Just $
+                                            takeExtension suggestedFilename)
 
 isHashEqual :: LB.ByteString -> FilePath -> IO Bool
 isHashEqual byteString filePath = do
