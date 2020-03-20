@@ -66,10 +66,11 @@ addMetadatas metadatas media =
                 parseExifTag 0x9003 parseExifStringDate metadatas
           }
 
-parseExifTag :: Word16 -> (E.ExifData -> a) -> M.Metadatas -> Maybe a
-parseExifTag code parse metadatas = parse
-    <$> M.lookup (M.Exif $ E.TagUnknown code) metadatas
+parseExifTag :: Word16 -> (E.ExifData -> Maybe a) -> M.Metadatas -> Maybe a
+parseExifTag code parse metadatas =
+    M.lookup (M.Exif $ E.TagUnknown code) metadatas >>= parse
 
-parseExifStringDate :: E.ExifData -> String
+parseExifStringDate :: E.ExifData -> Maybe String
 parseExifStringDate (E.ExifString byteString) =
-    T.unpack $ T.init $ TE.decodeUtf8 byteString
+    Just $ T.unpack $ T.init $ TE.decodeUtf8 byteString
+parseExifStringDate _ = Nothing
