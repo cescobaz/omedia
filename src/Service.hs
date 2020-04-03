@@ -24,7 +24,7 @@ data Options = Options { port :: Port, homePath :: Text }
 
 run :: Service.Options -> IO ()
 run options@(Service.Options port homePath) = do
-    let databasePath = Data.Text.concat [ homePath, "/database.sqlite3" ]
+    let databasePath = Data.Text.concat [ homePath, "/database.ejdb" ]
     repository <- Repository.create databasePath
     scotty port $ do
         middleware logStdoutDev

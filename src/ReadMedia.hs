@@ -4,9 +4,11 @@ module ReadMedia ( getApiMedia, MediaQuery(..), getMedia, defaultMediaQuery ) wh
 
 import           Control.Monad.IO.Class
 
+import           Data.Maybe
 import           Data.Text
 
-import           Database.SQLite3
+import           Database.EJDB2
+import           Database.EJDB2.Query   as Query
 
 import           Media
 
@@ -26,24 +28,8 @@ defaultMediaQuery :: MediaQuery
 defaultMediaQuery = MediaQuery { offset = 0, limit = 25 }
 
 getMedia :: Repository -> MediaQuery -> IO [Media]
-getMedia repository query = do
-    let database = Repository.database repository
-    let sQuery =
-            "select id, file_path from photos order by id desc limit ? offset ?"
-    statement <- prepare database sQuery
-    bindInt statement 1 (limit query)
-    bindInt statement 2 (offset query)
-    result <- step statement
-    photos <- readMedia statement result []
-    finalize statement
-    return photos
-
-readMedia :: Statement -> StepResult -> [Media] -> IO [Media]
-readMedia statement Done photos = return photos
-readMedia statement Row photos = do
-    id <- columnInt64 statement 0
-    filePath <- columnText statement 1
-    let photo = Media.minimalMedia (fromIntegral id) (unpack filePath)
-    result <- step statement
-    readMedia statement result (photos ++ [ photo ])
-
+getMedia (Repository database) mediaQuery = do
+    query <- Query.fromString "@media/* | skip :offset limit :limit"
+    Query.setI64 (fromIntegral $ offset mediaQuery) "offset" query
+    Query.setI64 (fromIntegral $ limit mediaQuery) "limit" query
+    catMaybes <$> (getList' database query)

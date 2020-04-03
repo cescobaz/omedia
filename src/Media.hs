@@ -12,7 +12,7 @@ import qualified Codec.Picture               as P
 import qualified Codec.Picture.Metadata      as M
 import qualified Codec.Picture.Metadata.Exif as E
 
-import           Data.Aeson                  ( ToJSON )
+import           Data.Aeson                  ( FromJSON, ToJSON )
 import qualified Data.Text                   as T
 import qualified Data.Text.Encoding          as TE
 import           Data.Word
@@ -24,11 +24,13 @@ data Media = Media { id :: Int
                    , dateTimeOriginal :: Maybe String
                    , importDate :: Maybe String
                    , date :: Maybe String
-                   , tags :: [String]
+                   , tags :: Maybe [String]
                    }
     deriving ( Eq, Show, Generic )
 
 instance ToJSON Media
+
+instance FromJSON Media
 
 minimalMedia :: Int -> String -> Media
 minimalMedia id filePath =
@@ -37,7 +39,7 @@ minimalMedia id filePath =
           , dateTimeOriginal = Nothing
           , importDate = Nothing
           , date = Nothing
-          , tags = []
+          , tags = Nothing
           }
 
 allowedContentType :: [String]

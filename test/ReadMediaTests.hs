@@ -32,10 +32,10 @@ tests = testGroup "Repository" [ createEmptyDatabase, readSomeMedia ]
 
 createEmptyDatabase :: TestTree
 createEmptyDatabase =
-    withResource (Repository.create "./test/new-empty.sqlite3")
+    withResource (Repository.create "./test/new-empty.db")
                  (\repository -> do
                       Repository.release repository
-                      removeIfExists "./test/new-empty.sqlite3")
+                      removeIfExists "./test/new-empty.db")
                  (\m ->
                   testCase "createEmptyDatabase"
                            (do
@@ -45,7 +45,7 @@ createEmptyDatabase =
 
 readSomeMedia :: TestTree
 readSomeMedia =
-    withResource (Repository.create "./test/some-photos.sqlite3")
+    withResource (Repository.create "./test/some-photos.ejdb")
                  Repository.release
                  (\r ->
                   testGroup "readSomeMedia"

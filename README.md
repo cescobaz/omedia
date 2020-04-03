@@ -10,7 +10,7 @@ cabal v2-run
 media/
 thumbnails/
 to-import/
-database.sqlite3
+database.ejdb
 
 ## API
 GET `base-path`/media/?sortBy=`field`&sortOrder=`ascending|descending`
