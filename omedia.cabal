@@ -32,6 +32,7 @@ library
   build-depends:
         base >=4.12 && <4.13
       , text ^>=1.2.4.0
+      , regex-compat ^>=0.95.1
       , ejdb2-binding ^>=0.1.0.0
       , scotty ^>=0.11.5
       , aeson ^>=1.4.6.0
