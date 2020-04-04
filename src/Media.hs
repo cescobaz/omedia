@@ -2,6 +2,7 @@
 
 module Media
     ( Media(..)
+    , Metadata(..)
     , minimalMedia
     , isContentTypeAllowed
     , isSuffixAllowed
@@ -19,12 +20,21 @@ import           Data.Word
 
 import           GHC.Generics
 
-data Media = Media { id :: Int
-                   , filePath :: String
-                   , dateTimeOriginal :: Maybe String
+data Metadata = Metadata { dateTimeOriginal   :: Maybe String
+                         , offsetTimeOriginal :: Maybe String
+                         }
+    deriving ( Eq, Show, Generic )
+
+instance ToJSON (Metadata)
+
+instance FromJSON (Metadata)
+
+data Media = Media { id         :: Int
+                   , filePath   :: String
                    , importDate :: Maybe String
-                   , date :: Maybe String
-                   , tags :: Maybe [String]
+                   , date       :: Maybe String
+                   , tags       :: Maybe [String]
+                   , metadata   :: Maybe Metadata
                    }
     deriving ( Eq, Show, Generic )
 
@@ -34,12 +44,12 @@ instance FromJSON Media
 
 minimalMedia :: Int -> String -> Media
 minimalMedia id filePath =
-    Media { Media.id = id
-          , filePath = filePath
-          , dateTimeOriginal = Nothing
+    Media { Media.id   = id
+          , filePath   = filePath
           , importDate = Nothing
-          , date = Nothing
-          , tags = Nothing
+          , date       = Nothing
+          , tags       = Nothing
+          , metadata   = Nothing
           }
 
 allowedContentType :: [String]
@@ -64,13 +74,25 @@ fromFile filePath = do
 
 addMetadatas :: M.Metadatas -> Media -> Media
 addMetadatas metadatas media =
-    media { dateTimeOriginal =
-                parseExifTag 0x9003 parseExifStringDate metadatas
+    media { metadata = Just Metadata { dateTimeOriginal   =
+                                           parseExifTag 0x9003
+                                                        parseExifStringDate
+                                                        metadatas
+                                     , offsetTimeOriginal =
+                                           parseExifTag 0x9011
+                                                        parseExifString
+                                                        metadatas
+                                     }
           }
 
 parseExifTag :: Word16 -> (E.ExifData -> Maybe a) -> M.Metadatas -> Maybe a
 parseExifTag code parse metadatas =
     M.lookup (M.Exif $ E.TagUnknown code) metadatas >>= parse
+
+parseExifString :: E.ExifData -> Maybe String
+parseExifString (E.ExifString byteString) =
+    Just $ T.unpack $ T.init $ TE.decodeUtf8 byteString
+parseExifString _ = Nothing
 
 parseExifStringDate :: E.ExifData -> Maybe String
 parseExifStringDate (E.ExifString byteString) =
