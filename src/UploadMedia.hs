@@ -43,8 +43,8 @@ data Result = Result { result      :: ST.Text
 
 instance ToJSON Result
 
-postToImport :: Repository -> ST.Text -> ScottyM ()
-postToImport repository homePath = post "/to-import/" $ do
+postToImport :: Repository -> ScottyM ()
+postToImport (Repository homePath _) = post "/to-import/" $ do
     boundary <- boundary
     body <- body
     results <- liftIO $ parseBody boundary body homePath

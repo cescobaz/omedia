@@ -16,8 +16,8 @@ import           System.FilePath
 
 import           Web.Scotty
 
-getToImport :: Repository -> ST.Text -> ScottyM ()
-getToImport repository homePath = get "/api/to-import/" $ do
+getToImport :: Repository -> ScottyM ()
+getToImport (Repository homePath _) = get "/api/to-import/" $ do
     files <- liftIO $ ReadToImport.files (ST.unpack homePath ++ "/to-import")
     json files
 

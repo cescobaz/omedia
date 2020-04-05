@@ -8,10 +8,10 @@ import           Database.EJDB2 as EJDB2
 
 import           Prelude        hiding ( init )
 
-newtype Repository = Repository { database :: Database }
+data Repository = Repository { homePath :: Text, database :: Database }
 
-create :: Text -> IO Repository
-create path = Repository <$> (EJDB2.init >> open options)
+create :: Text -> Text -> IO Repository
+create homePath path = Repository homePath <$> (EJDB2.init >> open options)
   where
     options = minimalOptions (unpack path) []
 

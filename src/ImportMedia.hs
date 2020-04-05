@@ -25,16 +25,16 @@ data Result =
 
 instance ToJSON Result
 
-postApiMedia :: Repository -> Text -> ScottyM ()
-postApiMedia repository homePath =
+postApiMedia :: Repository -> ScottyM ()
+postApiMedia repository =
     post "/api/media/"
-         (jsonData >>= (liftIO . importMedia repository homePath) >>= json)
+         (jsonData >>= (liftIO . importMedia repository) >>= json)
 
-importMedia :: Repository -> Text -> [String] -> IO [Result]
-importMedia repository homePath = mapM (importSingleMedia repository homePath)
+importMedia :: Repository -> [String] -> IO [Result]
+importMedia repository = mapM (importSingleMedia repository)
 
-importSingleMedia :: Repository -> Text -> String -> IO Result
-importSingleMedia repository homePath mediaToImport = do
+importSingleMedia :: Repository -> String -> IO Result
+importSingleMedia repository@(Repository homePath _) mediaToImport = do
     if allowed
         then (importSingleFile repository filePath
               >>= \(r, m) -> return $ res r m)
@@ -49,5 +49,4 @@ importSingleMedia repository homePath mediaToImport = do
 importSingleFile :: Repository -> String -> IO (String, Maybe Media)
 importSingleFile repository filePath = do
     media <- Media.fromFile filePath
-
     return ("boh", Just media)
