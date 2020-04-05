@@ -30,7 +30,7 @@ createMediaFromImage = testCase "createMediaFromImage" $ do
                       , Media.offsetTimeDigitized = Nothing
                       }
 
-    date = Just "2019-07-15T08:55:58.085"
+    date = Just "2019-07-15T08:55:58.085Z"
 
 createMediaFromImage' :: TestTree
 createMediaFromImage' = testCase "createMediaFromImage'" $ do
@@ -52,7 +52,7 @@ createMediaFromImage' = testCase "createMediaFromImage'" $ do
                         , Media.offsetTimeDigitized = Just "+01:00"
                         }
 
-    date = Just "2020-03-07T12:05:05.994+01:00"
+    date = Just "2020-03-07T11:05:05.994Z"
 
 
 

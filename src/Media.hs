@@ -9,16 +9,16 @@ module Media
     , fromFile
     ) where
 
-import           Data.Aeson         ( FromJSON, ToJSON )
-import qualified Data.Map.Strict    as Map
+import           Data.Aeson       ( FromJSON, ToJSON )
+import qualified Data.Map.Strict  as Map
 import           Data.Maybe
-import qualified Data.Text          as T
-import qualified Data.Text.Encoding as TE
+import qualified Data.Time.Clock  as Clock
+import qualified Data.Time.Format as TimeFormat
 import           Data.Word
 
 import           GHC.Generics
 
-import qualified Graphics.HsExif    as E
+import qualified Graphics.HsExif  as E
 
 import           Text.Regex
 
@@ -116,7 +116,7 @@ parseExifString (E.ExifText string) = Just string
 parseExifString _ = Nothing
 
 dateFromMetadata :: Metadata -> Maybe String
-dateFromMetadata metadata = case date of
+dateFromMetadata metadata = maybe Nothing normalizeDateString $ case date of
     Just date -> Just date
     Nothing -> case date' of
         Just date' -> Just date'
@@ -134,20 +134,30 @@ dateFromMetadata metadata = case date of
                           (subSecTime metadata)
                           (offsetTime metadata)
 
-mkDateString :: Maybe String -> Maybe String -> Maybe String -> Maybe String
+mkDateString
+    :: Maybe String -> Maybe String -> Maybe String -> Maybe (String, String)
 mkDateString Nothing _ _ = Nothing
 mkDateString (Just dateTime) Nothing Nothing = do
     (year : month : day : time : _) <- matchRegex regex dateTime
-    return $ year ++ "-" ++ month ++ "-" ++ day ++ "T" ++ time
+    return (year ++ "-" ++ month ++ "-" ++ day ++ "T" ++ time, "%Y-%m-%dT%T")
   where
     regex =
         mkRegex "([0-9]{4}):([0-9]{2}):([0-9]{2}) ([0-9]{2}:[0-9]{2}:[0-9]{2})"
 mkDateString dateTime (Just subSec) Nothing = do
-    dateString <- mkDateString dateTime Nothing Nothing
-    return $ dateString ++ "." ++ subSec
+    (dateString, _) <- mkDateString dateTime Nothing Nothing
+    return (dateString ++ "." ++ subSec, "%Y-%m-%dT%T%Q")
 mkDateString dateTime Nothing (Just offset) = do
-    dateString <- mkDateString dateTime Nothing Nothing
-    return $ dateString ++ offset
+    (dateString, _) <- mkDateString dateTime Nothing Nothing
+    return (dateString ++ offset, "%Y-%m-%dT%T%z")
 mkDateString dateTime subSec (Just offset) = do
-    dateString <- mkDateString dateTime subSec Nothing
-    return $ dateString ++ offset
+    (dateString, _) <- mkDateString dateTime subSec Nothing
+    return (dateString ++ offset, "%Y-%m-%dT%T%Q%z")
+
+normalizeDateString :: (String, String) -> Maybe String
+normalizeDateString (dateString, format) = do
+    utc <- (TimeFormat.parseTimeM True
+                                  TimeFormat.defaultTimeLocale
+                                  format
+                                  dateString) :: Maybe Clock.UTCTime
+    return $
+        TimeFormat.formatTime TimeFormat.defaultTimeLocale "%Y-%m-%dT%T%QZ" utc
