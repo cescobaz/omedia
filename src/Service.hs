@@ -6,6 +6,8 @@ import           Control.Monad.IO.Class
 
 import           Data.Text
 
+import           DeleteMedia
+
 import           ImportMedia
 
 import           Network.Wai.Handler.Warp             ( Port )
@@ -35,6 +37,7 @@ run options@(Service.Options port homePath) = do
         postToImport repository
         getToImport repository
         postApiMedia repository
+        deleteApiMedia repository
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath =

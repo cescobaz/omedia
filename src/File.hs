@@ -1,5 +1,7 @@
 module File where
 
+import           Control.Monad
+
 import qualified Data.ByteString.Lazy  as LB
 import qualified Data.Hashable         as H
 import           Data.UUID
@@ -31,4 +33,9 @@ randomFileName directory extension = do
 
 hash :: FilePath -> IO Int
 hash filePath = H.hash <$> LB.readFile filePath
+
+removeFileIfExists :: FilePath -> IO ()
+removeFileIfExists filePath = do
+    exists <- doesFileExist filePath
+    when exists (removeFile filePath)
 
