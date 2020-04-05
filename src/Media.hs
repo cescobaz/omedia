@@ -155,9 +155,9 @@ mkDateString dateTime subSec (Just offset) = do
 
 normalizeDateString :: (String, String) -> Maybe String
 normalizeDateString (dateString, format) = do
-    utc <- (TimeFormat.parseTimeM True
-                                  TimeFormat.defaultTimeLocale
-                                  format
-                                  dateString) :: Maybe Clock.UTCTime
+    utc <- TimeFormat.parseTimeM True
+                                 TimeFormat.defaultTimeLocale
+                                 format
+                                 dateString :: Maybe Clock.UTCTime
     return $
         TimeFormat.formatTime TimeFormat.defaultTimeLocale "%Y-%m-%dT%T%QZ" utc

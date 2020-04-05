@@ -20,6 +20,7 @@ library
   exposed-modules:
       HLib
       Folders
+      File
       Repository
       Service
       Media
