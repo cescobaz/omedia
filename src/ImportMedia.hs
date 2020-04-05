@@ -7,6 +7,7 @@ import           Control.Monad.IO.Class
 
 import           Data.Aeson             ( ToJSON )
 import           Data.Text
+import           Data.Text
 
 import qualified Folders                as F
 
@@ -26,15 +27,27 @@ instance ToJSON Result
 
 postApiMedia :: Repository -> Text -> ScottyM ()
 postApiMedia repository homePath =
-    post "/api/media/" (jsonData >>= (liftIO . importMedia homePath) >>= json)
+    post "/api/media/"
+         (jsonData >>= (liftIO . importMedia repository homePath) >>= json)
 
-importMedia :: Text -> [String] -> IO [Result]
-importMedia homePath = mapM (importSingleMedia homePath)
+importMedia :: Repository -> Text -> [String] -> IO [Result]
+importMedia repository homePath = mapM (importSingleMedia repository homePath)
 
-importSingleMedia :: Text -> String -> IO Result
-importSingleMedia homePath mediaToImport = do
-    media <- Media.fromFile filePath
-    return Result { media = Just media }
+importSingleMedia :: Repository -> Text -> String -> IO Result
+importSingleMedia repository homePath mediaToImport = do
+    if allowed
+        then (importSingleFile repository filePath
+              >>= \(r, m) -> return $ res r m)
+        else (return $ res "not allowed media" Nothing)
   where
-    filePath =
-        unpack homePath ++ F.surroundWithSlashes F.toImport ++ mediaToImport
+    res = Result mediaToImport
+
+    allowed = isPrefixOf "/to-import/" (pack mediaToImport)
+
+    filePath = (unpack homePath) ++ mediaToImport
+
+importSingleFile :: Repository -> String -> IO (String, Maybe Media)
+importSingleFile repository filePath = do
+    media <- Media.fromFile filePath
+
+    return ("boh", Just media)

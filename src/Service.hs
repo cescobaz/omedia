@@ -6,6 +6,8 @@ import           Control.Monad.IO.Class
 
 import           Data.Text
 
+import           ImportMedia
+
 import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
@@ -32,6 +34,7 @@ run options@(Service.Options port homePath) = do
         getApiMedia repository
         postToImport repository homePath
         getToImport repository homePath
+        postApiMedia repository homePath
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath =

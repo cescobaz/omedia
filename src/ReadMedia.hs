@@ -29,7 +29,7 @@ defaultMediaQuery = MediaQuery { offset = 0, limit = 25 }
 
 getMedia :: Repository -> MediaQuery -> IO [Media]
 getMedia (Repository database) mediaQuery = do
-    query <- Query.fromString "@media/* | skip :offset limit :limit"
+    query <- Query.fromString "@media/* | desc /date desc /importDate skip :offset limit :limit"
     Query.setI64 (fromIntegral $ offset mediaQuery) "offset" query
     Query.setI64 (fromIntegral $ limit mediaQuery) "limit" query
     catMaybes <$> (getList' database query)
