@@ -37,8 +37,7 @@ instance ToJSON Result
 
 postApiMedia :: Repository -> ScottyM ()
 postApiMedia repository =
-    post "/api/media/"
-         (jsonData >>= (liftIO . importMedia repository) >>= json)
+    post "/api/media/" (jsonData >>= liftIO . importMedia repository >>= json)
 
 importMedia :: Repository -> [String] -> IO [Result]
 importMedia repository = mapM (importSingleMedia repository)
