@@ -9,17 +9,16 @@ module Media
     , fromFile
     ) where
 
-import qualified Codec.Picture               as P
-import qualified Codec.Picture.Metadata      as M
-import qualified Codec.Picture.Metadata.Exif as E
-
-import           Data.Aeson                  ( FromJSON, ToJSON )
+import           Data.Aeson         ( FromJSON, ToJSON )
+import qualified Data.Map.Strict    as Map
 import           Data.Maybe
-import qualified Data.Text                   as T
-import qualified Data.Text.Encoding          as TE
+import qualified Data.Text          as T
+import qualified Data.Text.Encoding as TE
 import           Data.Word
 
 import           GHC.Generics
+
+import qualified Graphics.HsExif    as E
 
 import           Text.Regex
 
@@ -77,59 +76,43 @@ isSuffixAllowed _ = False
 
 fromFile :: String -> IO Media
 fromFile filePath = do
-    result <- P.readImageWithMetadata filePath
+    result <- E.parseFileExif filePath
     case result of
         Left message -> fail message
-        Right (_, metadatas) -> do
-            putStrLn "-------------------"
-            putStrLn $ show $ M.extractExifMetas metadatas
-            return $ addMetadatas metadatas (minimalMedia 0 filePath)
+        Right metadatas -> do
+            let metadatas' = Map.mapKeys (\(E.ExifTag _ _ k _) -> k) metadatas
+            let metadata = mapMetadata metadatas'
+            return $
+                (minimalMedia 0 filePath) { metadata = Just metadata
+                                          , date     = dateFromMetadata metadata
+                                          }
 
-addMetadatas :: M.Metadatas -> Media -> Media
-addMetadatas metadatas media =
-    media { metadata =
-                Just Metadata { dateTimeOriginal = parseExifTag 0x9003
-                                                                parseExifString
-                                                                metadatas
-                              , subSecTimeOriginal =
-                                    parseExifTag 0x9291
-                                                 parseExifString
-                                                 metadatas
-                              , offsetTimeOriginal =
-                                    parseExifTag 0x9011
-                                                 parseExifString
-                                                 metadatas
-                              , dateTime =
-                                    parseExifTag 0x0132 -- 0x0132 doesn't work
-                                                 parseExifString
-                                                 metadatas
-                              , subSecTime = parseExifTag 0x9290
-                                                          parseExifString
-                                                          metadatas
-                              , offsetTime = parseExifTag 0x9010
-                                                          parseExifString
-                                                          metadatas
-                              , dateTimeDigitized = parseExifTag 0x9004
-                                                                 parseExifString
-                                                                 metadatas
-                              , subSecTimeDigitized =
-                                    parseExifTag 0x9292
-                                                 parseExifString
-                                                 metadatas
-                              , offsetTimeDigitized =
-                                    parseExifTag 0x9012
-                                                 parseExifString
-                                                 metadatas
-                              }
-          }
+mapMetadata :: Map.Map Word16 E.ExifValue -> Metadata
+mapMetadata metadatas =
+    Metadata { dateTimeOriginal = parseExifTag 0x9003 parseExifString metadatas
+             , subSecTimeOriginal =
+                   parseExifTag 0x9291 parseExifString metadatas
+             , offsetTimeOriginal =
+                   parseExifTag 0x9011 parseExifString metadatas
+             , dateTime = parseExifTag 0x0132 parseExifString metadatas
+             , subSecTime = parseExifTag 0x9290 parseExifString metadatas
+             , offsetTime = parseExifTag 0x9010 parseExifString metadatas
+             , dateTimeDigitized =
+                   parseExifTag 0x9004 parseExifString metadatas
+             , subSecTimeDigitized =
+                   parseExifTag 0x9292 parseExifString metadatas
+             , offsetTimeDigitized =
+                   parseExifTag 0x9012 parseExifString metadatas
+             }
 
-parseExifTag :: Word16 -> (E.ExifData -> Maybe a) -> M.Metadatas -> Maybe a
-parseExifTag code parse metadatas =
-    M.lookup (M.Exif $ E.tagOfWord16 code) metadatas >>= parse
+parseExifTag :: Word16
+             -> (E.ExifValue -> Maybe a)
+             -> Map.Map Word16 E.ExifValue
+             -> Maybe a
+parseExifTag code parse metadatas = Map.lookup code metadatas >>= parse
 
-parseExifString :: E.ExifData -> Maybe String
-parseExifString (E.ExifString byteString) =
-    Just $ T.unpack $ T.init $ TE.decodeUtf8 byteString
+parseExifString :: E.ExifValue -> Maybe String
+parseExifString (E.ExifText string) = Just string
 parseExifString _ = Nothing
 
 dateFromMetadata :: Metadata -> Maybe String
@@ -140,22 +123,31 @@ dateFromMetadata metadata = case date of
         Nothing -> date''
   where
     date = mkDateString (dateTimeOriginal metadata)
+                        (subSecTimeOriginal metadata)
                         (offsetTimeOriginal metadata)
-                        Nothing
 
     date' = mkDateString (dateTimeDigitized metadata)
+                         (subSecTimeDigitized metadata)
                          (offsetTimeDigitized metadata)
-                         Nothing
 
-    date'' = mkDateString (dateTime metadata) (offsetTime metadata) Nothing
+    date'' = mkDateString (dateTime metadata)
+                          (subSecTime metadata)
+                          (offsetTime metadata)
 
 mkDateString :: Maybe String -> Maybe String -> Maybe String -> Maybe String
-mkDateString dateTime subSec offset = do
-    (_ : date : time : _) <- dateTime >>= matchRegex regex
-    let isoDate = date ++ "T" ++ time
-    let isoDate' = maybe isoDate (++ (isoDate ++ ".")) subSec
-    let isoDate'' = maybe isoDate' (++ isoDate') offset
-    return isoDate''
+mkDateString Nothing _ _ = Nothing
+mkDateString (Just dateTime) Nothing Nothing = do
+    (year : month : day : time : _) <- matchRegex regex dateTime
+    return $ year ++ "-" ++ month ++ "-" ++ day ++ "T" ++ time
   where
-    regex = mkRegex "([0-9]{4}-[0-9]{2}-[0-9]{2}) ([0-9]{2}:[0-9]{2}:[0-9]{2})"
-
+    regex =
+        mkRegex "([0-9]{4}):([0-9]{2}):([0-9]{2}) ([0-9]{2}:[0-9]{2}:[0-9]{2})"
+mkDateString dateTime (Just subSec) Nothing = do
+    dateString <- mkDateString dateTime Nothing Nothing
+    return $ dateString ++ "." ++ subSec
+mkDateString dateTime Nothing (Just offset) = do
+    dateString <- mkDateString dateTime Nothing Nothing
+    return $ dateString ++ offset
+mkDateString dateTime subSec (Just offset) = do
+    dateString <- mkDateString dateTime subSec Nothing
+    return $ dateString ++ offset

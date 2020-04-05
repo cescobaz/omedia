@@ -45,7 +45,8 @@ library
       , directory ^>=1.3.6.0
       , hashable ^>=1.3.0.0
       , filepath ^>=1.4.2.1
-      , JuicyPixels ^>=3.3.5
+      , hsexif ^>=0.6.1.8
+      , containers ^>=0.6.0.1
   default-language:    Haskell2010
 
 executable omedia-exe
