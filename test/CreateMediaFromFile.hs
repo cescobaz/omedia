@@ -18,8 +18,8 @@ createMediaFromImage = testCase "createMediaFromImage" $ do
   where
     filePath = "./test/image-with-exif.jpeg"
 
-    metadata =
-        Just Metadata { Media.dateTimeOriginal = Just "2019:07:15 08:55:58"
+    metadata = Just $
+        emptyMetadata { Media.dateTimeOriginal = Just "2019:07:15 08:55:58"
                       , Media.subSecTimeOriginal = Just "085"
                       , Media.offsetTimeOriginal = Nothing
                       , Media.dateTime = Just "2019:07:15 08:55:58"
@@ -28,6 +28,7 @@ createMediaFromImage = testCase "createMediaFromImage" $ do
                       , Media.dateTimeDigitized = Just "2019:07:15 08:55:58"
                       , Media.subSecTimeDigitized = Just "085"
                       , Media.offsetTimeDigitized = Nothing
+                      , Media.orientation = Just 1
                       }
 
     date = Just "2019-07-15T08:55:58.085Z"
@@ -41,20 +42,29 @@ createMediaFromImage' = testCase "createMediaFromImage'" $ do
   where
     filePath = "./test/image-with-exif-2.jpeg"
 
-    metadata = Metadata { Media.dateTimeOriginal = Just "2020:03:07 12:05:05"
-                        , Media.subSecTimeOriginal = Just "994"
-                        , Media.offsetTimeOriginal = Just "+01:00"
-                        , Media.dateTime = Just "2020:03:07 12:05:05"
-                        , Media.subSecTime = Nothing
-                        , Media.offsetTime = Just "+01:00"
-                        , Media.subSecTimeDigitized = Just "994"
-                        , Media.dateTimeDigitized = Just "2020:03:07 12:05:05"
-                        , Media.offsetTimeDigitized = Just "+01:00"
-                        }
+    metadata =
+        emptyMetadata { Media.dateTimeOriginal = Just "2020:03:07 12:05:05"
+                      , Media.subSecTimeOriginal = Just "994"
+                      , Media.offsetTimeOriginal = Just "+01:00"
+                      , Media.dateTime = Just "2020:03:07 12:05:05"
+                      , Media.subSecTime = Nothing
+                      , Media.offsetTime = Just "+01:00"
+                      , Media.subSecTimeDigitized = Just "994"
+                      , Media.dateTimeDigitized = Just "2020:03:07 12:05:05"
+                      , Media.offsetTimeDigitized = Just "+01:00"
+                      , Media.orientation = Just 1
+                      }
 
     date = Just "2020-03-07T11:05:05.994Z"
 
-
+createMediaFromImageToRotate :: TestTree
+createMediaFromImageToRotate = testCase "createMediaFromImageToRotate" $ do
+    media <- Media.fromFile filePath
+    filePath @=? Media.filePath media
+    let Just metadata = Media.metadata media
+    Just 8 @=? Media.orientation metadata
+  where
+    filePath = "./test/to-rotate.jpeg"
 
 
 

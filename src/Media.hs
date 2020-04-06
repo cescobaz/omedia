@@ -3,6 +3,7 @@
 module Media
     ( Media(..)
     , Metadata(..)
+    , emptyMetadata
     , minimalMedia
     , isContentTypeAllowed
     , isSuffixAllowed
@@ -32,12 +33,27 @@ data Metadata =
              , dateTimeDigitized :: Maybe String
              , subSecTimeDigitized :: Maybe String
              , offsetTimeDigitized :: Maybe String
+             , orientation :: Maybe Int
              }
     deriving ( Eq, Show, Generic )
 
-instance ToJSON (Metadata)
+instance ToJSON Metadata
 
-instance FromJSON (Metadata)
+instance FromJSON Metadata
+
+emptyMetadata :: Metadata
+emptyMetadata =
+    Metadata { dateTimeOriginal = Nothing
+             , subSecTimeOriginal = Nothing
+             , offsetTimeOriginal = Nothing
+             , dateTime = Nothing
+             , offsetTime = Nothing
+             , subSecTime = Nothing
+             , dateTimeDigitized = Nothing
+             , subSecTimeDigitized = Nothing
+             , offsetTimeDigitized = Nothing
+             , orientation = Nothing
+             }
 
 data Media = Media { id         :: Int
                    , filePath   :: String
@@ -103,6 +119,7 @@ mapMetadata metadatas =
                    parseExifTag 0x9292 parseExifString metadatas
              , offsetTimeDigitized =
                    parseExifTag 0x9012 parseExifString metadatas
+             , orientation = parseExifTag 0x0112 parseExifInt metadatas
              }
 
 parseExifTag :: Word16
@@ -110,6 +127,10 @@ parseExifTag :: Word16
              -> Map.Map Word16 E.ExifValue
              -> Maybe a
 parseExifTag code parse metadatas = Map.lookup code metadatas >>= parse
+
+parseExifInt :: E.ExifValue -> Maybe Int
+parseExifInt (E.ExifNumber number) = Just $ fromIntegral number
+parseExifInt _ = Nothing
 
 parseExifString :: E.ExifValue -> Maybe String
 parseExifString (E.ExifText string) = Just string
