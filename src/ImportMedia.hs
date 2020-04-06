@@ -22,6 +22,8 @@ import           Media
 
 import           Prelude                hiding ( id )
 
+import qualified ReadMedia              ( fromFile )
+
 import           Repository
 
 import           System.Directory
@@ -60,7 +62,7 @@ importSingleFile (Repository homePath database) filePath = do
     if not exists
         then return ("file to import doesn't exists", Nothing)
         else do
-            media <- Media.fromFile filePath
+            media <- ReadMedia.fromFile filePath
             let filename = takeFileName filePath
             let suggestedMediaFilePath =
                     unpack homePath ++ F.surroundWithSlashes F.media ++ filename
