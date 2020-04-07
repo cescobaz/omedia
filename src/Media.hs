@@ -46,8 +46,8 @@ emptyMetadata =
              , orientation = Nothing
              }
 
-data Media = Media { id         :: Int64
-                   , filePath   :: String
+data Media = Media { id         :: Maybe Int64
+                   , filePath   :: Maybe String
                    , importDate :: Maybe String
                    , date       :: Maybe String
                    , tags       :: Maybe [String]
@@ -61,8 +61,8 @@ instance FromJSON Media
 
 minimalMedia :: Int64 -> String -> Media
 minimalMedia id filePath =
-    Media { Media.id   = id
-          , filePath   = filePath
+    Media { Media.id   = Just id
+          , filePath   = Just filePath
           , importDate = Nothing
           , date       = Nothing
           , tags       = Nothing

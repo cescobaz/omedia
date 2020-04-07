@@ -28,10 +28,9 @@ deleteApiMedia repository = delete "/api/media/:id" $
     param "id" >>= liftIO . removeMedia repository >> status status204
 
 removeMedia :: Repository -> Int64 -> IO ()
-removeMedia (Repository homePath database) id = do
-    media <- EJDB2.getById database "media" id
-    case media of
-        Nothing -> fail "media not found"
-        Just media -> do
-            File.removeFileIfExists $ Media.filePath media
-            EJDB2.delete database "media" id
+removeMedia (Repository homePath database) id =
+    EJDB2.getById database "media" id
+    >>= maybe (fail "media not found")
+              (maybe (fail "no filePath for media")
+                     (\filePath -> File.removeFileIfExists filePath
+                      >> EJDB2.delete database "media" id) . Media.filePath)

@@ -14,7 +14,7 @@ tests = testGroup "CreateMediaFromFile"
 createMediaFromImage :: TestTree
 createMediaFromImage = testCase "createMediaFromImage" $ do
     media <- ReadMedia.fromFile filePath
-    filePath @=? Media.filePath media
+    Just filePath @=? Media.filePath media
     metadata @=? Media.metadata media
     date @=? Media.date media
   where
@@ -38,7 +38,7 @@ createMediaFromImage = testCase "createMediaFromImage" $ do
 createMediaFromImage' :: TestTree
 createMediaFromImage' = testCase "createMediaFromImage'" $ do
     media <- ReadMedia.fromFile filePath
-    filePath @=? Media.filePath media
+    Just filePath @=? Media.filePath media
     Just metadata @=? Media.metadata media
     date @=? Media.date media
   where
@@ -62,7 +62,7 @@ createMediaFromImage' = testCase "createMediaFromImage'" $ do
 createMediaFromImageToRotate :: TestTree
 createMediaFromImageToRotate = testCase "createMediaFromImageToRotate" $ do
     media <- ReadMedia.fromFile filePath
-    filePath @=? Media.filePath media
+    Just filePath @=? Media.filePath media
     let Just metadata = Media.metadata media
     Just 8 @=? Media.orientation metadata
   where

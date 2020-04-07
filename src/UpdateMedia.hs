@@ -27,13 +27,17 @@ updateMetadata :: Repository -> Int64 -> IO Media
 updateMetadata (Repository homePath database) id =
     DB.getById database "media" id
     >>= maybe (fail "media not found")
-              (\media -> do
-                   let filePath = unpack homePath ++ Media.filePath media
-                   metadata <- metadataFromFile filePath
-                   let media' = media { Media.id = id
-                                      , metadata = Just metadata
-                                      , date     = utcDateFromMetadata metadata
-                                      }
-                   DB.put database "media" media' id
-                   return media')
+              (\media ->
+               maybe (fail "no filePath for media")
+                     (\mediaFilePath -> do
+                          let filePath = unpack homePath ++ mediaFilePath
+                          metadata <- metadataFromFile filePath
+                          let media' = media { Media.id = Just id
+                                             , metadata = Just metadata
+                                             , date     =
+                                                   utcDateFromMetadata metadata
+                                             }
+                          DB.put database "media" media' id
+                          return media')
+                     (Media.filePath media))
 

@@ -75,12 +75,14 @@ importSingleFile (Repository homePath database) filePath = do
                     date <- Time.formatTime Time.defaultTimeLocale
                                             "%Y-%m-%dT%T%QZ"
                         <$> Clock.getCurrentTime
-                    let media' =
-                            media { filePath   = F.surroundWithSlashes F.media
-                                        ++ filename
-                                  , importDate = Just date
-                                  }
+                    let media' = media { filePath   = Just $
+                                             F.surroundWithSlashes F.media
+                                             ++ filename
+                                       , importDate = Just date
+                                       }
                     id <- putNew database "media" media'
-                    return ("ok", Just $ media' { id = fromIntegral id })
+                    return ( "ok"
+                           , Just $ media' { id = Just $ fromIntegral id }
+                           )
 
 
