@@ -20,6 +20,8 @@ import           ReadToImport
 
 import           Repository
 
+import           UpdateMedia
+
 import           UploadMedia
 
 import           Web.Scotty
@@ -38,6 +40,7 @@ run options@(Service.Options port homePath) = do
         getToImport repository
         postApiMedia repository
         deleteApiMedia repository
+        postApiMediaMetadata repository
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath =

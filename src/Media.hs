@@ -10,6 +10,7 @@ module Media
     ) where
 
 import           Data.Aeson   ( FromJSON, ToJSON )
+import           Data.Int
 
 import           GHC.Generics
 
@@ -45,7 +46,7 @@ emptyMetadata =
              , orientation = Nothing
              }
 
-data Media = Media { id         :: Int
+data Media = Media { id         :: Int64
                    , filePath   :: String
                    , importDate :: Maybe String
                    , date       :: Maybe String
@@ -58,7 +59,7 @@ instance ToJSON Media
 
 instance FromJSON Media
 
-minimalMedia :: Int -> String -> Media
+minimalMedia :: Int64 -> String -> Media
 minimalMedia id filePath =
     Media { Media.id   = id
           , filePath   = filePath

@@ -29,6 +29,7 @@ library
       ReadToImport
       ImportMedia
       DeleteMedia
+      UpdateMedia
   hs-source-dirs:
       src
   build-depends:
