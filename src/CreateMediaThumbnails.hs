@@ -10,6 +10,9 @@ import           File
 
 import           System.FilePath.Posix
 
+createThumbnails :: String -> String -> [(Int, Int)] -> IO [String]
+createThumbnails filePath directory = mapM (createThumbnail filePath directory)
+
 createThumbnail :: String -> String -> (Int, Int) -> IO String
 createThumbnail filePath directory maxSize = readImage filePath
     >>= either fail (return . ImageRGB16 . scaleImage maxSize . convertRGB16)
