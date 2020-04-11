@@ -25,6 +25,7 @@ library
       Service
       Media
       ReadMedia
+      MediaMetadata
       UploadMedia
       ReadToImport
       ImportMedia

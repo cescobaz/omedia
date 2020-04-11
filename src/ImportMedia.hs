@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module ImportMedia ( postApiMedia ) where
+module ImportMedia ( postApiMedia, fromFile ) where
 
 import           Control.Monad.IO.Class
 
@@ -20,9 +20,9 @@ import           GHC.Generics
 
 import           Media
 
-import           Prelude                hiding ( id )
+import           MediaMetadata
 
-import qualified ReadMedia              ( fromFile )
+import           Prelude                hiding ( id )
 
 import           Repository
 
@@ -62,7 +62,7 @@ importSingleFile (Repository homePath database) filePath = do
     if not exists
         then return ("file to import doesn't exists", Nothing)
         else do
-            media <- ReadMedia.fromFile filePath
+            media <- fromFile filePath
             let filename = takeFileName filePath
             let suggestedMediaFilePath =
                     unpack homePath </> F.media </> filename
@@ -84,4 +84,9 @@ importSingleFile (Repository homePath database) filePath = do
                            , Just $ media' { id = Just $ fromIntegral id }
                            )
 
-
+fromFile :: String -> IO Media
+fromFile filePath = do
+    metadata <- metadataFromFile filePath
+    return $ (minimalMedia 0 filePath) { metadata = Just metadata
+                                       , date     = utcDateFromMetadata metadata
+                                       }

@@ -1,8 +1,8 @@
 module CreateMediaFromFile where
 
-import           Media
+import           ImportMedia
 
-import           ReadMedia
+import           Media
 
 import           Test.Tasty
 import           Test.Tasty.HUnit
@@ -13,7 +13,7 @@ tests = testGroup "CreateMediaFromFile"
 
 createMediaFromImage :: TestTree
 createMediaFromImage = testCase "createMediaFromImage" $ do
-    media <- ReadMedia.fromFile filePath
+    media <- ImportMedia.fromFile filePath
     Just filePath @=? Media.filePath media
     metadata @=? Media.metadata media
     date @=? Media.date media
@@ -37,7 +37,7 @@ createMediaFromImage = testCase "createMediaFromImage" $ do
 
 createMediaFromImage' :: TestTree
 createMediaFromImage' = testCase "createMediaFromImage'" $ do
-    media <- ReadMedia.fromFile filePath
+    media <- ImportMedia.fromFile filePath
     Just filePath @=? Media.filePath media
     Just metadata @=? Media.metadata media
     date @=? Media.date media
@@ -61,7 +61,7 @@ createMediaFromImage' = testCase "createMediaFromImage'" $ do
 
 createMediaFromImageToRotate :: TestTree
 createMediaFromImageToRotate = testCase "createMediaFromImageToRotate" $ do
-    media <- ReadMedia.fromFile filePath
+    media <- ImportMedia.fromFile filePath
     Just filePath @=? Media.filePath media
     let Just metadata = Media.metadata media
     Just 8 @=? Media.orientation metadata

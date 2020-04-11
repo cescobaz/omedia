@@ -12,6 +12,8 @@ import           DeleteMedia
 
 import           ImportMedia
 
+import           MediaMetadata
+
 import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
@@ -21,8 +23,6 @@ import           ReadMedia
 import           ReadToImport
 
 import           Repository
-
-import           UpdateMedia
 
 import           UploadMedia
 
