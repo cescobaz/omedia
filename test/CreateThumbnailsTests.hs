@@ -16,25 +16,26 @@ createThumbnailTest = testCase "createThumbnailTest" $ do
     thumbnail <- createThumbnail "./test/big-image.jpeg"
                                  "./test/data-out/thumbnails"
                                  size
-    Right image <- readImage ("./test/data-out/thumbnails/" ++ thumbnail)
-    dynamicMap imageWidth image @?= fst size
-    dynamicMap imageHeight image @?= 96
+    testThumbnail size thumbnail
   where
     size = (128, 128)
+
+testThumbnail :: (Int, Int) -> Thumbnail -> IO ()
+testThumbnail (maxWidth, maxHeight) thumbnail = do
+    let expectedWidth = maxWidth
+    let expectedHeight = round (0.75 * fromIntegral maxHeight :: Double)
+    width thumbnail @?= expectedWidth
+    height thumbnail @?= expectedHeight
+    Right image
+        <- readImage ("./test/data-out/thumbnails/" ++ filePath thumbnail)
+    dynamicMap imageWidth image @?= expectedWidth
+    dynamicMap imageHeight image @?= expectedHeight
 
 createThumbnailsTest :: TestTree
 createThumbnailsTest = testCase "createThumbnailsTest" $ do
     thumbnails <- createThumbnails "./test/big-image.jpeg"
                                    "./test/data-out/thumbnails"
                                    sizes
-    mapM_ (\(thumbnail, size) -> do
-               Right image
-                   <- readImage ("./test/data-out/thumbnails/" ++ thumbnail)
-               let expectedWidth = fst size
-               let expectedHeight =
-                       round (0.75 * fromIntegral (snd size) :: Double)
-               dynamicMap imageWidth image @?= expectedWidth
-               dynamicMap imageHeight image @?= expectedHeight)
-          (zip thumbnails sizes)
+    mapM_ (uncurry testThumbnail) (zip sizes thumbnails)
   where
     sizes = [ (512, 512), (256, 256), (128, 128) ]

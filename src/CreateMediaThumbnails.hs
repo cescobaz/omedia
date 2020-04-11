@@ -10,26 +10,30 @@ import           File
 
 import           System.FilePath.Posix
 
-createThumbnails :: String -> String -> [(Int, Int)] -> IO [String]
+data Thumbnail = Thumbnail { filePath :: String, width :: Int, height :: Int }
+
+createThumbnails :: String -> String -> [(Int, Int)] -> IO [Thumbnail]
 createThumbnails filePath directory = mapM (createThumbnail filePath directory)
 
-createThumbnail :: String -> String -> (Int, Int) -> IO String
+createThumbnail :: String -> String -> (Int, Int) -> IO Thumbnail
 createThumbnail filePath directory maxSize = readImage filePath
-    >>= either fail (return . ImageRGB16 . scaleImage maxSize . convertRGB16)
-    >>= \image -> chooseNotExistingFileName directory (takeExtension filePath)
+    >>= either fail (return . scaleDynamicImage maxSize)
+    >>= \(image, (width, height)) ->
+    chooseNotExistingFileName directory (takeExtension filePath)
     >>= \destFilePath -> saveJpgImage 100 destFilePath image
-    >> return (takeFileName destFilePath)
+    >> return Thumbnail { filePath = takeFileName destFilePath
+                        , width    = width
+                        , height   = height
+                        }
 
-scaleImage :: ( Pixel a
-              , Bounded (PixelBaseComponent a)
-              , Integral (PixelBaseComponent a)
-              )
-           => (Int, Int)
-           -> Image a
-           -> Image a
-scaleImage maxSize image = scaleBilinear width height image
+scaleDynamicImage :: (Int, Int) -> DynamicImage -> (DynamicImage, (Int, Int))
+scaleDynamicImage maxSize dynamicImage =
+    (ImageRGB16 $ scaleBilinear width height image, size)
   where
-    (width, height) = scaleSize maxSize (imageWidth image, imageHeight image)
+    image = convertRGB16 dynamicImage
+
+    size@(width, height) =
+        scaleSize maxSize (imageWidth image, imageHeight image)
 
 scaleSize :: (Int, Int) -> (Int, Int) -> (Int, Int)
 scaleSize (maxWidth, maxHeight) (originalWidth, originalHeight)
