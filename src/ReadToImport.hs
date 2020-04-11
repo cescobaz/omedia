@@ -28,4 +28,4 @@ files path = do
         Data.List.filter (Media.isSuffixAllowed . takeExtension) entries
 
 map :: FilePath -> Media
-map filePath = minimalMedia 0 ("/to-import/" ++ filePath)
+map filePath = minimalMedia 0 ("to-import/" </> filePath)

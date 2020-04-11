@@ -2,13 +2,13 @@ module File where
 
 import           Control.Monad
 
-import qualified Data.ByteString.Lazy  as LB
-import qualified Data.Hashable         as H
+import qualified Data.ByteString.Lazy as LB
+import qualified Data.Hashable        as H
 import           Data.UUID
 import           Data.UUID.V4
 
 import           System.Directory
-import           System.FilePath.Posix
+import           System.FilePath
 
 chooseFileName :: FilePath -> IO Int -> IO (Maybe FilePath)
 chooseFileName filePath hashIO = do

@@ -26,7 +26,7 @@ import qualified Media
 
 import           Repository
 
-import           System.FilePath.Posix
+import           System.FilePath
 
 import           Thumbnail
 

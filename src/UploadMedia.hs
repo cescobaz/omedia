@@ -29,7 +29,7 @@ import           Network.Wai.Handler.Warp ( Port )
 import           Repository
 
 import           System.Directory
-import           System.FilePath.Posix
+import           System.FilePath
 
 import           Web.Scotty
 

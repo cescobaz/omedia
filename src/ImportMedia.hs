@@ -52,7 +52,7 @@ importSingleMedia repository@(Repository homePath _) mediaToImport =
   where
     res = Result mediaToImport
 
-    allowed = "/to-import/" `isPrefixOf` pack mediaToImport
+    allowed = "to-import/" `isPrefixOf` pack mediaToImport
 
     filePath = unpack homePath ++ mediaToImport
 
@@ -65,7 +65,7 @@ importSingleFile (Repository homePath database) filePath = do
             media <- ReadMedia.fromFile filePath
             let filename = takeFileName filePath
             let suggestedMediaFilePath =
-                    unpack homePath ++ F.surroundWithSlashes F.media ++ filename
+                    unpack homePath </> F.media </> filename
             mediaFilePath
                 <- chooseFileName suggestedMediaFilePath (File.hash filePath)
             case mediaFilePath of
@@ -75,11 +75,10 @@ importSingleFile (Repository homePath database) filePath = do
                     date <- Time.formatTime Time.defaultTimeLocale
                                             "%Y-%m-%dT%T%QZ"
                         <$> Clock.getCurrentTime
-                    let media' = media { filePath   = Just $
-                                             F.surroundWithSlashes F.media
-                                             ++ filename
-                                       , importDate = Just date
-                                       }
+                    let media' =
+                            media { filePath   = Just $ F.media </> filename
+                                  , importDate = Just date
+                                  }
                     id <- putNew database "media" media'
                     return ( "ok"
                            , Just $ media' { id = Just $ fromIntegral id }
