@@ -5,6 +5,8 @@ module ImportMedia ( postApiMedia, fromFile ) where
 
 import           Control.Monad.IO.Class
 
+import           CreateMediaThumbnails
+
 import           Data.Aeson             ( ToJSON )
 import           Data.Text
 import qualified Data.Time.Clock        as Clock
@@ -75,9 +77,11 @@ importSingleFile (Repository homePath database) filePath = do
                     date <- Time.formatTime Time.defaultTimeLocale
                                             "%Y-%m-%dT%T%QZ"
                         <$> Clock.getCurrentTime
+                    thumbnails <- createMediaThumbnails homePath mediaFilePath
                     let media' =
                             media { filePath   = Just $ F.media </> filename
                                   , importDate = Just date
+                                  , thumbnails = Just thumbnails
                                   }
                     id <- putNew database "media" media'
                     return ( "ok"

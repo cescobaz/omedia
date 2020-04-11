@@ -15,9 +15,9 @@ tests =
 
 createThumbnailTest :: TestTree
 createThumbnailTest = testCase "createThumbnailTest" $ do
-    thumbnail <- createThumbnail "./test/big-image.jpeg"
-                                 "./test/data-out/thumbnails"
+    thumbnail <- createThumbnail "./test/data-out/thumbnails"
                                  size
+                                 "./test/big-image.jpeg"
     testThumbnail size thumbnail
   where
     size = (128, 128)
@@ -35,9 +35,9 @@ testThumbnail (maxWidth, maxHeight) thumbnail = do
 
 createThumbnailsTest :: TestTree
 createThumbnailsTest = testCase "createThumbnailsTest" $ do
-    thumbnails <- createThumbnails "./test/big-image.jpeg"
-                                   "./test/data-out/thumbnails"
+    thumbnails <- createThumbnails "./test/data-out/thumbnails"
                                    sizes
+                                   "./test/big-image.jpeg"
     mapM_ (uncurry testThumbnail) (zip sizes thumbnails)
   where
     sizes = [ (512, 512), (256, 256), (128, 128) ]

@@ -3,6 +3,7 @@
 module CreateMediaThumbnails
     ( postApiMediaThumbnails
     , updateMediaThumbnails
+    , createMediaThumbnails
     , createThumbnails
     , createThumbnail
     ) where
@@ -11,6 +12,7 @@ import           Codec.Picture
 import           Codec.Picture.Extra
 import           Codec.Picture.Types
 
+import           Control.Monad
 import           Control.Monad.IO.Class
 
 import           Data.Maybe
@@ -43,16 +45,17 @@ postApiMediaThumbnails (Repository homePath database) =
 updateMediaThumbnails :: T.Text -> Media.Media -> IO Media.Media
 updateMediaThumbnails homePath media =
     maybe (fail "no media filePath")
-          (\mediaFilePath ->
-           fmap mapThumbnailsFilePath
-                (createThumbnails (T.unpack homePath ++ mediaFilePath)
-                                  thumbnailDirectory
-                                  sizes) >>= \thumbnails ->
+          (createMediaThumbnails homePath >=> \thumbnails ->
            maybe (return ())
                  (mapM_ (deleteFile homePath))
                  (Media.thumbnails media)
            >> return media { Media.thumbnails = Just thumbnails })
           (Media.filePath media)
+
+createMediaThumbnails :: T.Text -> String -> IO [Thumbnail]
+createMediaThumbnails homePath filePath =
+    fmap mapThumbnailsFilePath
+         (createThumbnails thumbnailDirectory sizes filePath)
   where
     thumbnailDirectory = T.unpack homePath </> mediaThumbnails
 
@@ -69,11 +72,12 @@ deleteFile :: T.Text -> Thumbnail -> IO ()
 deleteFile homePath thumbnail =
     removeFileIfExists (T.unpack homePath </> filePath thumbnail)
 
-createThumbnails :: String -> String -> [(Int, Int)] -> IO [Thumbnail]
-createThumbnails filePath directory = mapM (createThumbnail filePath directory)
+createThumbnails :: String -> [(Int, Int)] -> String -> IO [Thumbnail]
+createThumbnails directory sizes filePath =
+    mapM (\size -> createThumbnail directory size filePath) sizes
 
-createThumbnail :: String -> String -> (Int, Int) -> IO Thumbnail
-createThumbnail filePath directory maxSize = readImage filePath
+createThumbnail :: String -> (Int, Int) -> String -> IO Thumbnail
+createThumbnail directory maxSize filePath = readImage filePath
     >>= either fail (return . scaleDynamicImage maxSize)
     >>= \(image, (width, height)) ->
     chooseNotExistingFileName directory (takeExtension filePath)

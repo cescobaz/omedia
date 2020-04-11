@@ -2,6 +2,7 @@
 
 module ReadMedia
     ( getApiMedia
+    , getApiMediaById
     , MediaQuery(..)
     , getMedia
     , getMediaById
@@ -11,23 +12,14 @@ module ReadMedia
 import           Control.Monad.IO.Class
 
 import           Data.Int
-import qualified Data.Map.Strict        as Map
 import           Data.Maybe
-import           Data.Text
-import qualified Data.Time.Clock        as Clock
-import qualified Data.Time.Format       as TimeFormat
-import           Data.Word
 
 import           Database.EJDB2
 import           Database.EJDB2.Query   as Query
 
-import qualified Graphics.HsExif        as E
-
 import           Media
 
 import           Repository
-
-import           Text.Regex
 
 import           Web.Scotty
 
@@ -38,6 +30,12 @@ getApiMedia repository = get "/api/media/" $ do
     let query = defaultMediaQuery
     media <- liftIO $ getMedia repository query
     json media
+
+getApiMediaById :: Repository -> ScottyM ()
+getApiMediaById (Repository _ database) =
+    get "/api/media/:id"
+        (fromIntegral . read <$> param "id" >>= liftIO . getMediaById database
+         >>= json)
 
 defaultMediaQuery :: MediaQuery
 defaultMediaQuery = MediaQuery { offset = 0, limit = 25 }

@@ -38,6 +38,7 @@ run options@(Service.Options port homePath) = do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath
         getApiMedia repository
+        getApiMediaById repository
         postToImport repository
         getToImport repository
         postApiMedia repository
