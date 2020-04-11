@@ -15,6 +15,5 @@ toImport = "to-import"
 media :: String
 media = "media"
 
-thumbnails :: String
-thumbnails = "thumbnails"
-
+mediaThumbnails :: String
+mediaThumbnails = "media-thumbnails"

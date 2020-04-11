@@ -14,6 +14,8 @@ import           Data.Int
 
 import           GHC.Generics
 
+import           Thumbnail    ( Thumbnail )
+
 data Metadata =
     Metadata { dateTimeOriginal :: Maybe String
              , subSecTimeOriginal :: Maybe String
@@ -52,6 +54,7 @@ data Media = Media { id         :: Maybe Int64
                    , date       :: Maybe String
                    , tags       :: Maybe [String]
                    , metadata   :: Maybe Metadata
+                   , thumbnails :: Maybe [Thumbnail]
                    }
     deriving ( Eq, Show, Generic )
 
@@ -67,6 +70,7 @@ minimalMedia id filePath =
           , date       = Nothing
           , tags       = Nothing
           , metadata   = Nothing
+          , thumbnails = Nothing
           }
 
 allowedContentType :: [String]

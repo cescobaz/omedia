@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Repository ( Repository(..), create, release ) where
+module Repository ( Repository(..), create, release, mediaCollection ) where
 
 import           Data.Text
 
@@ -18,3 +18,5 @@ create homePath path = Repository homePath <$> (EJDB2.init >> open options)
 release :: Repository -> IO ()
 release = close . database
 
+mediaCollection :: String
+mediaCollection = "media"

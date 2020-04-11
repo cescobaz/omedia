@@ -4,6 +4,8 @@ module Service where
 
 import           Control.Monad.IO.Class
 
+import           CreateMediaThumbnails
+
 import           Data.Text
 
 import           DeleteMedia
@@ -41,6 +43,7 @@ run options@(Service.Options port homePath) = do
         postApiMedia repository
         deleteApiMedia repository
         postApiMediaMetadata repository
+        postApiMediaThumbnails repository
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath =

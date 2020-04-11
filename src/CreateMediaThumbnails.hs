@@ -1,16 +1,73 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
 
-module CreateMediaThumbnails where
+module CreateMediaThumbnails
+    ( postApiMediaThumbnails
+    , updateMediaThumbnails
+    , createThumbnails
+    , createThumbnail
+    ) where
 
 import           Codec.Picture
 import           Codec.Picture.Extra
 import           Codec.Picture.Types
 
+import           Control.Monad.IO.Class
+
+import           Data.Maybe
+import qualified Data.Text              as T
+
+import qualified Database.EJDB2         as DB
+
 import           File
+
+import           Folders
+
+import qualified Media
+
+import           Repository
 
 import           System.FilePath.Posix
 
-data Thumbnail = Thumbnail { filePath :: String, width :: Int, height :: Int }
+import           Thumbnail
+
+import           UpdateMedia
+
+import           Web.Scotty
+
+postApiMediaThumbnails :: Repository -> ScottyM ()
+postApiMediaThumbnails (Repository homePath database) =
+    post "/api/media/:id/thumbnails"
+         (fromIntegral . read <$> param "id" >>= liftIO
+          . updateMediaM database (updateMediaThumbnails homePath) >>= json)
+
+updateMediaThumbnails :: T.Text -> Media.Media -> IO Media.Media
+updateMediaThumbnails homePath media =
+    maybe (fail "no media filePath")
+          (\mediaFilePath ->
+           fmap mapThumbnailsFilePath
+                (createThumbnails (T.unpack homePath ++ mediaFilePath)
+                                  thumbnailDirectory
+                                  sizes) >>= \thumbnails ->
+           maybe (return ())
+                 (mapM_ (deleteFile homePath))
+                 (Media.thumbnails media)
+           >> return media { Media.thumbnails = Just thumbnails })
+          (Media.filePath media)
+  where
+    thumbnailDirectory = T.unpack homePath </> mediaThumbnails
+
+    sizes = [ (512, 512), (256, 256), (128, 128) ]
+
+mapThumbnailsFilePath :: [Thumbnail] -> [Thumbnail]
+mapThumbnailsFilePath = map mapThumbnailFilePath
+
+mapThumbnailFilePath :: Thumbnail -> Thumbnail
+mapThumbnailFilePath thumbnail =
+    thumbnail { filePath = mediaThumbnails </> filePath thumbnail }
+
+deleteFile :: T.Text -> Thumbnail -> IO ()
+deleteFile homePath thumbnail =
+    removeFileIfExists (T.unpack homePath </> filePath thumbnail)
 
 createThumbnails :: String -> String -> [(Int, Int)] -> IO [Thumbnail]
 createThumbnails filePath directory = mapM (createThumbnail filePath directory)

@@ -7,6 +7,8 @@ import           CreateMediaThumbnails
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
+import           Thumbnail
+
 tests :: TestTree
 tests =
     testGroup "CreateThumbnails" [ createThumbnailTest, createThumbnailsTest ]

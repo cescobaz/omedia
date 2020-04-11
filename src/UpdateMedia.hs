@@ -37,7 +37,15 @@ updateMetadata (Repository homePath database) id =
                                              , date     =
                                                    utcDateFromMetadata metadata
                                              }
-                          DB.put database "media" media' id
+                          DB.put database mediaCollection media' id
                           return media')
                      (Media.filePath media))
+
+updateMedia :: DB.Database -> (Media -> Media) -> Int64 -> IO Media
+updateMedia database f id = fmap f (getMediaById database id)
+    >>= \media -> DB.put database mediaCollection media id >> return media
+
+updateMediaM :: DB.Database -> (Media -> IO Media) -> Int64 -> IO Media
+updateMediaM database f id = getMediaById database id >>= f
+    >>= \media -> DB.put database mediaCollection media id >> return media
 

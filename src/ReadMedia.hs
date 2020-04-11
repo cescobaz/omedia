@@ -4,6 +4,7 @@ module ReadMedia
     ( getApiMedia
     , MediaQuery(..)
     , getMedia
+    , getMediaById
     , defaultMediaQuery
     , fromFile
     , metadataFromFile
@@ -12,6 +13,7 @@ module ReadMedia
 
 import           Control.Monad.IO.Class
 
+import           Data.Int
 import qualified Data.Map.Strict        as Map
 import           Data.Maybe
 import           Data.Text
@@ -49,6 +51,11 @@ getMedia (Repository _ database) mediaQuery = do
     Query.setI64 (fromIntegral $ offset mediaQuery) "offset" query
     Query.setI64 (fromIntegral $ limit mediaQuery) "limit" query
     catMaybes <$> getList' database query
+
+getMediaById :: Database -> Int64 -> IO Media
+getMediaById database id = getById database "media" id
+    >>= maybe (fail "media not found")
+              (\media -> return $ media { Media.id = Just id })
 
 fromFile :: String -> IO Media
 fromFile filePath = do
