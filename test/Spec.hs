@@ -2,6 +2,8 @@ module Main where
 
 import           CreateMediaFromFile
 
+import           CreateThumbnailsTests
+
 import           ReadMediaTests
 
 import           Test.Tasty
@@ -11,4 +13,8 @@ main :: IO ()
 main = defaultMain Main.tests
 
 tests :: TestTree
-tests = testGroup "Tests" [ ReadMediaTests.tests, CreateMediaFromFile.tests ]
+tests = testGroup "Tests"
+                  [ ReadMediaTests.tests
+                  , CreateMediaFromFile.tests
+                  , CreateThumbnailsTests.tests
+                  ]

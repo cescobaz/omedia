@@ -100,11 +100,9 @@ parseExifString (E.ExifText string) = Just string
 parseExifString _ = Nothing
 
 utcDateFromMetadata :: Metadata -> Maybe String
-utcDateFromMetadata metadata = maybe Nothing normalizeDateString $ case date of
+utcDateFromMetadata metadata = normalizeDateString =<< case date of
     Just date -> Just date
-    Nothing -> case date' of
-        Just date' -> Just date'
-        Nothing -> date''
+    Nothing -> maybe date'' Just date'
   where
     date = mkDateString (dateTimeOriginal metadata)
                         (subSecTimeOriginal metadata)

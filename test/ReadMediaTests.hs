@@ -28,7 +28,7 @@ removeIfExists fileName = removeFile fileName `catch` handleExists
         | otherwise = throwIO e
 
 tests :: TestTree
-tests = testGroup "Repository" [ createEmptyDatabase, readSomeMedia ]
+tests = testGroup "ReadMedia" [ createEmptyDatabase, readSomeMedia ]
 
 createEmptyDatabase :: TestTree
 createEmptyDatabase =

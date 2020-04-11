@@ -1,0 +1,8 @@
+cradle:
+  cabal:
+    - path: "./test/"
+      component: "test:omedia-tests"
+    - path: "./app/Main.hs"
+      component: "exe:omedia-exe"
+    - path: "./src/"
+      component: "lib:omedia"
