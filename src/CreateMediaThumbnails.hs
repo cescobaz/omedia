@@ -6,16 +6,16 @@ import           Codec.Picture
 import           Codec.Picture.Extra
 import           Codec.Picture.Types
 
+import           File
+
+import           System.FilePath.Posix
+
 createThumbnail :: String -> String -> (Int, Int) -> IO String
-createThumbnail filePath destFolder maxSize = readImage filePath
+createThumbnail filePath directory maxSize = readImage filePath
     >>= either fail (return . ImageRGB16 . scaleImage maxSize . convertRGB16)
-    >>= saveJpgImage 100 destFilePath >> return thumbnailFileName
-  where
-    fileName = "pippo.jpeg"
-
-    thumbnailFileName = fileName ++ show (fst maxSize) ++ ".jpeg"
-
-    destFilePath = destFolder ++ "/" ++ thumbnailFileName
+    >>= \image -> chooseNotExistingFileName directory (takeExtension filePath)
+    >>= \destFilePath -> saveJpgImage 100 destFilePath image
+    >> return (takeFileName destFilePath)
 
 scaleImage :: ( Pixel a
               , Bounded (PixelBaseComponent a)

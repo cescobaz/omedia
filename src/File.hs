@@ -26,10 +26,18 @@ chooseFileName filePath hashIO = do
                     randomFilePath <- randomFileName directory extension
                     chooseFileName randomFilePath hashIO
 
+chooseNotExistingFileName :: FilePath -> String -> IO FilePath
+chooseNotExistingFileName directory extension = do
+    filePath <- randomFileName directory extension
+    exists <- doesFileExist filePath
+    if not exists
+        then return filePath
+        else chooseNotExistingFileName directory extension
+
 randomFileName :: FilePath -> String -> IO FilePath
 randomFileName directory extension = do
     uuid <- nextRandom
-    return $ directory ++ Data.UUID.toString uuid ++ extension
+    return $ directory </> Data.UUID.toString uuid ++ extension
 
 hash :: FilePath -> IO Int
 hash filePath = H.hash <$> LB.readFile filePath
