@@ -5,8 +5,6 @@ module ImportMedia ( postApiMedia, fromFile ) where
 
 import           Control.Monad.IO.Class
 
-import           CreateMediaThumbnails
-
 import           Data.Aeson             ( ToJSON )
 import           Data.Text
 import qualified Data.Time.Clock        as Clock
@@ -23,6 +21,8 @@ import           GHC.Generics
 import           Media
 
 import           MediaMetadata
+
+import           MediaThumbnails
 
 import           Prelude                hiding ( id )
 

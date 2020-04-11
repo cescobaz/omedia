@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CreateMediaThumbnails
+module MediaThumbnails
     ( postApiMediaThumbnails
     , updateMediaThumbnails
     , createMediaThumbnails
@@ -59,7 +59,7 @@ createMediaThumbnails homePath filePath =
   where
     thumbnailDirectory = T.unpack homePath </> mediaThumbnails
 
-    sizes = [ (512, 512), (256, 256), (128, 128) ]
+    sizes = [ (128, 128), (256, 256), (512, 512) ]
 
 mapThumbnailsFilePath :: [Thumbnail] -> [Thumbnail]
 mapThumbnailsFilePath = map mapThumbnailFilePath

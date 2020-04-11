@@ -2,7 +2,7 @@ module CreateThumbnailsTests where
 
 import           Codec.Picture
 
-import           CreateMediaThumbnails
+import           MediaThumbnails
 
 import           Test.Tasty
 import           Test.Tasty.HUnit

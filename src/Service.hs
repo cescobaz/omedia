@@ -4,8 +4,6 @@ module Service where
 
 import           Control.Monad.IO.Class
 
-import           CreateMediaThumbnails
-
 import           Data.Text
 
 import           DeleteMedia
@@ -13,6 +11,8 @@ import           DeleteMedia
 import           ImportMedia
 
 import           MediaMetadata
+
+import           MediaThumbnails
 
 import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
