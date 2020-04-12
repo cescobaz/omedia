@@ -38,7 +38,7 @@ getApiMediaById (Repository _ database) =
          >>= json)
 
 defaultMediaQuery :: MediaQuery
-defaultMediaQuery = MediaQuery { offset = 0, limit = 25 }
+defaultMediaQuery = MediaQuery { offset = 0, limit = 500 }
 
 getMedia :: Repository -> MediaQuery -> IO [Media]
 getMedia (Repository _ database) mediaQuery = do
