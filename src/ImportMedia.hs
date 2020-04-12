@@ -56,7 +56,7 @@ importSingleMedia repository@(Repository homePath _) mediaToImport =
 
     allowed = "to-import/" `isPrefixOf` pack mediaToImport
 
-    filePath = unpack homePath ++ mediaToImport
+    filePath = unpack homePath </> mediaToImport
 
 importSingleFile :: Repository -> String -> IO (String, Maybe Media)
 importSingleFile (Repository homePath database) filePath = do

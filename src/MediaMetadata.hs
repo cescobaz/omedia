@@ -26,6 +26,8 @@ import           Media
 
 import           Repository
 
+import           System.FilePath
+
 import           Text.Regex
 
 import           UpdateMedia
@@ -40,8 +42,8 @@ postApiMediaMetadata (Repository homePath database) =
 updateMediaMetadata :: Text -> Media -> IO Media
 updateMediaMetadata homePath media =
     maybe (fail "no filePath for media")
-          (\mediaFilePath -> metadataFromFile (unpack homePath ++ mediaFilePath)
-           >>= \metadata ->
+          (\mediaFilePath ->
+           metadataFromFile (unpack homePath </> mediaFilePath) >>= \metadata ->
            return media { metadata = Just metadata
                         , date     = utcDateFromMetadata metadata
                         })

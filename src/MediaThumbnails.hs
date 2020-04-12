@@ -50,7 +50,9 @@ updateMediaThumbnails homePath media =
                  (mapM_ (deleteFile homePath))
                  (Media.thumbnails media)
            >> return media { Media.thumbnails = Just thumbnails })
-          (Media.filePath media)
+          filePath
+  where
+    filePath = fmap (T.unpack homePath </>) (Media.filePath media)
 
 createMediaThumbnails :: T.Text -> String -> IO [Thumbnail]
 createMediaThumbnails homePath filePath =

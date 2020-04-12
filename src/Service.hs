@@ -18,6 +18,8 @@ import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
 
+import           NormalizeMedia
+
 import           ReadMedia
 
 import           ReadToImport
@@ -37,6 +39,7 @@ run options@(Service.Options port homePath) = do
     scotty port $ do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath
+        postApiMediaNormalize repository
         getApiMedia repository
         getApiMediaById repository
         postToImport repository
@@ -47,8 +50,8 @@ run options@(Service.Options port homePath) = do
         postApiMediaThumbnails repository
 
 resourcesPolicy :: Text -> Policy
-resourcesPolicy homePath =
-    (hasPrefix "media" <|> hasPrefix "thumbnails" <|> hasPrefix "to-import")
+resourcesPolicy homePath = (hasPrefix "media/" <|> hasPrefix "media-thumbnails/"
+                            <|> hasPrefix "to-import/")
     >-> addBase (unpack homePath)
 
 

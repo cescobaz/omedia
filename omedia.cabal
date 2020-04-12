@@ -33,6 +33,7 @@ library
       UpdateMedia
       Thumbnail
       MediaThumbnails
+      NormalizeMedia
   hs-source-dirs:
       src
   build-depends:
