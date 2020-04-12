@@ -3,6 +3,7 @@
 
 module ImportMedia ( postApiMedia, fromFile ) where
 
+import           Control.Exception
 import           Control.Monad.IO.Class
 
 import           Data.Aeson             ( ToJSON )
@@ -64,7 +65,12 @@ importSingleFile (Repository homePath database) filePath = do
     if not exists
         then return ("file to import doesn't exists", Nothing)
         else do
-            media <- fromFile filePath
+            media <- catch (fromFile filePath)
+                           ((\e -> print e
+                             >> return (emptyMedia { Media.filePath =
+                                                         Just filePath
+                                                   }))
+                            :: IOException -> IO Media)
             let filename = takeFileName filePath
             let suggestedMediaFilePath =
                     unpack homePath </> F.media </> filename

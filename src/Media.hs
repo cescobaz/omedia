@@ -5,6 +5,7 @@ module Media
     , Metadata(..)
     , emptyMetadata
     , minimalMedia
+    , emptyMedia
     , isContentTypeAllowed
     , isSuffixAllowed
     ) where
@@ -62,16 +63,19 @@ instance ToJSON Media
 
 instance FromJSON Media
 
+emptyMedia :: Media
+emptyMedia = Media { Media.id   = Nothing
+                   , filePath   = Nothing
+                   , importDate = Nothing
+                   , date       = Nothing
+                   , tags       = Nothing
+                   , metadata   = Nothing
+                   , thumbnails = Nothing
+                   }
+
 minimalMedia :: Int64 -> String -> Media
 minimalMedia id filePath =
-    Media { Media.id   = Just id
-          , filePath   = Just filePath
-          , importDate = Nothing
-          , date       = Nothing
-          , tags       = Nothing
-          , metadata   = Nothing
-          , thumbnails = Nothing
-          }
+    emptyMedia { Media.id = Just id, filePath = Just filePath }
 
 allowedContentType :: [String]
 allowedContentType = [ "image" ]
