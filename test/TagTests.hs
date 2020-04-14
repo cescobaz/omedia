@@ -12,7 +12,8 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 
 tests :: TestTree
-tests = testGroup "Tag" [ addFirstTagTest ]
+tests =
+    testGroup "Tag" [ addFirstTagTest, addTagTest, removeNotExistingTagTest ]
 
 addFirstTagTest :: TestTree
 addFirstTagTest = testCase "addFirstTag" $ do
@@ -40,3 +41,31 @@ addTagTest = testCase "addTag" $ addTagToMedia tag media @?= expectedMedia
                    }
 
     tag = "last"
+
+removeNotExistingTagTest :: TestTree
+removeNotExistingTagTest = testCase "removeNotExistingTag" $ do
+    removeTagFromMedia tag media @?= media
+    removeTagFromMedia tag media' @?= media'
+    removeTagFromMedia tag media'' @?= media''
+  where
+    media = emptyMedia { tags = Nothing }
+
+    media' = emptyMedia { tags = Just Set.empty }
+
+    media'' = emptyMedia { tags = Just $ Set.fromList [ "first", "second" ] }
+
+    tag = "not existing tag"
+
+removeTagTest :: TestTree
+removeTagTest = testCase "removeTag" $ do
+    removeTagFromMedia "first" media @?= expectedMedia
+    removeTagFromMedia "second" media' @?= expectedMedia'
+  where
+    media = emptyMedia { tags = Just $ Set.fromList [ "first", "second" ] }
+
+    expectedMedia = emptyMedia { tags = Just $ Set.fromList [ "second" ] }
+
+    media' = expectedMedia
+
+    expectedMedia' = emptyMedia { tags = Just Set.empty }
+
