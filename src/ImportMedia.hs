@@ -8,8 +8,6 @@ import           Control.Monad.IO.Class
 
 import           Data.Aeson             ( ToJSON )
 import           Data.Text
-import qualified Data.Time.Clock        as Clock
-import qualified Data.Time.Format       as Time
 
 import           Database.EJDB2
 
@@ -31,6 +29,8 @@ import           Repository
 
 import           System.Directory
 import           System.FilePath
+
+import           Time
 
 import           Web.Scotty
 
@@ -80,16 +80,14 @@ importSingleFile (Repository homePath database) filePath = do
                 Nothing -> return ("already imported", Just media)
                 Just mediaFilePath -> do
                     renameFile filePath mediaFilePath
-                    date <- Time.formatTime Time.defaultTimeLocale
-                                            "%Y-%m-%dT%T%QZ"
-                        <$> Clock.getCurrentTime
+                    date <- Time.currentUTCDateTimeString
                     thumbnails <- createMediaThumbnails homePath mediaFilePath
                     let media' =
                             media { filePath   = Just $ F.media </> filename
                                   , importDate = Just date
                                   , thumbnails = Just thumbnails
                                   }
-                    id <- putNew database "media" media'
+                    id <- putNew database mediaCollection media'
                     return ( "ok"
                            , Just $ media' { id = Just $ fromIntegral id }
                            )

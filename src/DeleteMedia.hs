@@ -17,6 +17,8 @@ import           Network.HTTP.Types.Status
 
 import           Prelude                   hiding ( id )
 
+import           ReadMedia
+
 import           Repository
 
 import           System.Directory
@@ -28,9 +30,7 @@ deleteApiMedia repository = delete "/api/media/:id" $
     param "id" >>= liftIO . removeMedia repository >> status status204
 
 removeMedia :: Repository -> Int64 -> IO ()
-removeMedia (Repository homePath database) id =
-    EJDB2.getById database "media" id
-    >>= maybe (fail "media not found")
-              (maybe (fail "no filePath for media")
-                     (\filePath -> File.removeFileIfExists filePath
-                      >> EJDB2.delete database "media" id) . Media.filePath)
+removeMedia (Repository homePath database) id = getMediaById database id
+    >>= maybe (fail "no filePath for media")
+              (\filePath -> File.removeFileIfExists filePath
+               >> EJDB2.delete database mediaCollection id) . Media.filePath

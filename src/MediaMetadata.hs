@@ -30,6 +30,8 @@ import           System.FilePath
 
 import           Text.Regex
 
+import           Time
+
 import           UpdateMedia
 
 import           Web.Scotty
@@ -133,5 +135,6 @@ normalizeDateString (dateString, format) = do
                                  TimeFormat.defaultTimeLocale
                                  format
                                  dateString :: Maybe Clock.UTCTime
-    return $
-        TimeFormat.formatTime TimeFormat.defaultTimeLocale "%Y-%m-%dT%T%QZ" utc
+    return $ TimeFormat.formatTime TimeFormat.defaultTimeLocale
+                                   Time.utcDateTimeFormat
+                                   utc

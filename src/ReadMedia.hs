@@ -42,13 +42,14 @@ defaultMediaQuery = MediaQuery { offset = 0, limit = 500 }
 
 getMedia :: Repository -> MediaQuery -> IO [Media]
 getMedia (Repository _ database) mediaQuery = do
-    query <- Query.fromString "@media/* | desc /date desc /importDate skip :offset limit :limit"
+    query <- Query.fromString $ "@" ++ mediaCollection
+        ++ "/* | desc /date desc /importDate skip :offset limit :limit"
     Query.setI64 (fromIntegral $ offset mediaQuery) "offset" query
     Query.setI64 (fromIntegral $ limit mediaQuery) "limit" query
     catMaybes <$> getList' database query
 
 getMediaById :: Database -> Int64 -> IO Media
-getMediaById database id = getById database "media" id
+getMediaById database id = getById database mediaCollection id
     >>= maybe (fail "media not found")
               (\media -> return $ media { Media.id = Just id })
 
