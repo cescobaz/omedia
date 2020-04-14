@@ -12,8 +12,12 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 
 tests :: TestTree
-tests =
-    testGroup "Tag" [ addFirstTagTest, addTagTest, removeNotExistingTagTest ]
+tests = testGroup "Tag"
+                  [ addFirstTagTest
+                  , addTagTest
+                  , removeNotExistingTagTest
+                  , removeTagTest
+                  ]
 
 addFirstTagTest :: TestTree
 addFirstTagTest = testCase "addFirstTag" $ do
