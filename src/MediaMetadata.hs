@@ -32,7 +32,7 @@ import           Text.Regex
 
 import           Time
 
-import           UpdateMedia
+import           Update
 
 import           Web.Scotty
 

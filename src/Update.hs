@@ -1,4 +1,4 @@
-module UpdateMedia where
+module Update where
 
 import           Data.Int
 

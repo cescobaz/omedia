@@ -1,6 +1,6 @@
 module CreateMediaFromFile where
 
-import           ImportMedia
+import           Import
 
 import           Media
 
@@ -13,7 +13,7 @@ tests = testGroup "CreateMediaFromFile"
 
 createMediaFromImage :: TestTree
 createMediaFromImage = testCase "createMediaFromImage" $ do
-    media <- ImportMedia.fromFile filePath
+    media <- Import.fromFile filePath
     Just filePath @=? Media.filePath media
     metadata @=? Media.metadata media
     date @=? Media.date media
@@ -37,7 +37,7 @@ createMediaFromImage = testCase "createMediaFromImage" $ do
 
 createMediaFromImage' :: TestTree
 createMediaFromImage' = testCase "createMediaFromImage'" $ do
-    media <- ImportMedia.fromFile filePath
+    media <- Import.fromFile filePath
     Just filePath @=? Media.filePath media
     Just metadata @=? Media.metadata media
     date @=? Media.date media
@@ -61,7 +61,7 @@ createMediaFromImage' = testCase "createMediaFromImage'" $ do
 
 createMediaFromImageToRotate :: TestTree
 createMediaFromImageToRotate = testCase "createMediaFromImageToRotate" $ do
-    media <- ImportMedia.fromFile filePath
+    media <- Import.fromFile filePath
     Just filePath @=? Media.filePath media
     let Just metadata = Media.metadata media
     Just 8 @=? Media.orientation metadata

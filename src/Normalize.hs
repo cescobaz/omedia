@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module NormalizeMedia where
+module Normalize where
 
 import           Control.Monad.IO.Class
 
@@ -19,7 +19,7 @@ import           Read
 
 import           Repository
 
-import           UpdateMedia
+import           Update
 
 import           Web.Scotty
 

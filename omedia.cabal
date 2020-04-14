@@ -27,14 +27,14 @@ library
       Media
       Read
       MediaMetadata
-      UploadMedia
+      Upload
       ReadToImport
-      ImportMedia
-      DeleteMedia
-      UpdateMedia
+      Import
+      Delete
+      Update
       Thumbnail
       MediaThumbnails
-      NormalizeMedia
+      Normalize
       Tag
   hs-source-dirs:
       src

@@ -32,7 +32,7 @@ import           System.FilePath
 
 import           Thumbnail
 
-import           UpdateMedia
+import           Update
 
 import           Web.Scotty
 

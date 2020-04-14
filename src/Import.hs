@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module ImportMedia ( postApiMedia, fromFile ) where
+module Import ( postApiMedia, fromFile ) where
 
 import           Control.Exception
 import           Control.Monad.IO.Class

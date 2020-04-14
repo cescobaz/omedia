@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module UploadMedia ( postToImport ) where
+module Upload ( postToImport ) where
 
 import           Control.Exception        as E
 import           Control.Monad.Fail       as M
@@ -98,7 +98,7 @@ parseContentTypeAndWrite
 parseContentTypeAndWrite homePath headers byteString name filename = do
     contentType <- checkContentType headers
     (result, path)
-        <- UploadMedia.writeFile homePath byteString filename Nothing
+        <- Upload.writeFile homePath byteString filename Nothing
     return Result { name        = fmap ST.pack name
                   , filename    = fmap ST.pack filename
                   , contentType = Just $ ST.pack contentType
@@ -122,13 +122,13 @@ writeFile :: ST.Text
           -> IO (ST.Text, ST.Text)
 writeFile homePath byteString Nothing Nothing = do
     uuid <- nextRandom
-    UploadMedia.writeFile homePath
+    Upload.writeFile homePath
                           byteString
                           (Just $ Data.UUID.toString uuid)
                           Nothing
 writeFile homePath byteString Nothing (Just extension) = do
     uuid <- nextRandom
-    UploadMedia.writeFile homePath
+    Upload.writeFile homePath
                           byteString
                           (Just $ Data.UUID.toString uuid ++ extension)
                           Nothing
@@ -144,7 +144,7 @@ writeFile homePath byteString (Just suggestedFilename) _ = do
             isHashEqual <- isHashEqual byteString filePath
             if isHashEqual
                 then return ("skipped because exists", ST.pack path)
-                else UploadMedia.writeFile homePath
+                else Upload.writeFile homePath
                                            byteString
                                            Nothing
                                            (Just $

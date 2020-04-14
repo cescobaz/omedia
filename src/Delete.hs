@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module DeleteMedia ( deleteApiMedia ) where
+module Delete ( deleteApiMedia ) where
 
 import           Control.Exception
 import           Control.Monad.IO.Class

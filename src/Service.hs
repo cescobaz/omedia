@@ -6,9 +6,9 @@ import           Control.Monad.IO.Class
 
 import           Data.Text
 
-import           DeleteMedia
+import           Delete
 
-import           ImportMedia
+import           Import
 
 import           MediaMetadata
 
@@ -18,7 +18,7 @@ import           Network.Wai.Handler.Warp             ( Port )
 import           Network.Wai.Middleware.RequestLogger
 import           Network.Wai.Middleware.Static
 
-import           NormalizeMedia
+import           Normalize
 
 import           Read
 
@@ -26,7 +26,7 @@ import           ReadToImport
 
 import           Repository
 
-import           UploadMedia
+import           Upload
 
 import           Web.Scotty
 
