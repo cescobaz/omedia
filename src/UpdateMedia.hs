@@ -6,7 +6,7 @@ import qualified Database.EJDB2 as DB
 
 import           Media
 
-import           ReadMedia
+import           Read
 
 import           Repository
 

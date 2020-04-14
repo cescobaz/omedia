@@ -15,7 +15,7 @@ import           MediaMetadata
 
 import           MediaThumbnails
 
-import           ReadMedia
+import           Read
 
 import           Repository
 

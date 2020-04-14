@@ -4,7 +4,7 @@ import           CreateMediaFromFile
 
 import           CreateThumbnailsTests
 
-import           ReadMediaTests
+import           ReadTests
 
 import           TagTests
 
@@ -16,7 +16,7 @@ main = defaultMain Main.tests
 
 tests :: TestTree
 tests = testGroup "Tests"
-                  [ ReadMediaTests.tests
+                  [ ReadTests.tests
                   , CreateMediaFromFile.tests
                   , CreateThumbnailsTests.tests
                   , TagTests.tests

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadMedia
+module Read
     ( getApiMedia
     , getApiMediaById
     , MediaQuery(..)

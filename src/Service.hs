@@ -20,7 +20,7 @@ import           Network.Wai.Middleware.Static
 
 import           NormalizeMedia
 
-import           ReadMedia
+import           Read
 
 import           ReadToImport
 

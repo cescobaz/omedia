@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadMediaTests ( tests ) where
+module ReadTests ( tests ) where
 
 import           Control.Exception
 
@@ -10,7 +10,7 @@ import           Media
 
 import           Prelude           hiding ( catch )
 
-import           ReadMedia
+import           Read
 
 import           Repository
 
@@ -28,7 +28,7 @@ removeIfExists fileName = removeFile fileName `catch` handleExists
         | otherwise = throwIO e
 
 tests :: TestTree
-tests = testGroup "ReadMedia" [ createEmptyDatabase, readSomeMedia ]
+tests = testGroup "Read" [ createEmptyDatabase, readSomeMedia ]
 
 createEmptyDatabase :: TestTree
 createEmptyDatabase =

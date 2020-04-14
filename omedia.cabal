@@ -25,7 +25,7 @@ library
       Repository
       Service
       Media
-      ReadMedia
+      Read
       MediaMetadata
       UploadMedia
       ReadToImport
@@ -76,7 +76,7 @@ test-suite omedia-tests
   hs-source-dirs:
       test
   other-modules:
-      ReadMediaTests
+      ReadTests
       CreateMediaFromFile
       CreateThumbnailsTests 
       TagTests

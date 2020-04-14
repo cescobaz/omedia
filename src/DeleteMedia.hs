@@ -17,7 +17,7 @@ import           Network.HTTP.Types.Status
 
 import           Prelude                   hiding ( id )
 
-import           ReadMedia
+import           Read
 
 import           Repository
 
