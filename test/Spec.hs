@@ -6,6 +6,8 @@ import           CreateThumbnailsTests
 
 import           ReadMediaTests
 
+import           TagTests
+
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
@@ -17,4 +19,5 @@ tests = testGroup "Tests"
                   [ ReadMediaTests.tests
                   , CreateMediaFromFile.tests
                   , CreateThumbnailsTests.tests
+                  , TagTests.tests
                   ]

@@ -11,6 +11,7 @@ module Media
     ) where
 
 import           Data.Aeson   ( FromJSON, ToJSON )
+import           Data.HashSet as Set ( HashSet )
 import           Data.Int
 
 import           GHC.Generics
@@ -53,7 +54,7 @@ data Media = Media { id         :: Maybe Int64
                    , filePath   :: Maybe String
                    , importDate :: Maybe String
                    , date       :: Maybe String
-                   , tags       :: Maybe [String]
+                   , tags       :: Maybe (Set.HashSet String)
                    , metadata   :: Maybe Metadata
                    , thumbnails :: Maybe [Thumbnail]
                    }
