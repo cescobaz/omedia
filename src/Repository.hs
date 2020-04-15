@@ -1,6 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Repository ( Repository(..), create, release, mediaCollection ) where
+module Repository
+    ( Repository(..)
+    , create
+    , release
+    , mediaCollection
+    , tagsCollection
+    ) where
 
 import           Data.Text
 
@@ -20,3 +26,6 @@ release = close . database
 
 mediaCollection :: String
 mediaCollection = "media"
+
+tagsCollection :: String
+tagsCollection = "tags"

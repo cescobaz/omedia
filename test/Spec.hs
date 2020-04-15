@@ -6,6 +6,8 @@ import           CreateThumbnailsTests
 
 import           ReadTests
 
+import           TagIntegrationTests
+
 import           TagTests
 
 import           Test.Tasty
@@ -20,4 +22,5 @@ tests = testGroup "Tests"
                   , CreateMediaFromFile.tests
                   , CreateThumbnailsTests.tests
                   , TagTests.tests
+                  , TagIntegrationTests.tests
                   ]
