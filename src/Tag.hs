@@ -4,6 +4,7 @@ module Tag ( Tag(..), addTag, addTagToMedia, removeTagFromMedia ) where
 
 import           Data.Aeson           ( FromJSON, ToJSON )
 import qualified Data.HashSet         as Set
+import           Data.Hashable
 import           Data.Int
 import           Data.Maybe
 
@@ -18,7 +19,7 @@ import           Repository
 
 import           Update
 
-data Tag = Tag { tag :: String, count :: Int }
+newtype Tag = Tag { tag :: String }
     deriving ( Eq, Show, Generic )
 
 instance FromJSON Tag
@@ -29,22 +30,12 @@ addTag :: DB.Database -> String -> Int64 -> IO Media
 addTag database tag id = updateMedia database (addTagToMedia tag) id
     >>= \media -> putTag database tag >> return media
 
-putTag :: DB.Database -> String -> IO Tag
-putTag database tag =
-    Query.fromString queryString >>= \q -> Query.setStringAtIndex tag 0 q
-    >> return q >>= DB.getList database >>= incrementTagCount database tag
+putTag :: DB.Database -> String -> IO ()
+putTag database tag = print id >> DB.put database tagsCollection t id
   where
-    queryString = "@" ++ tagsCollection ++ "/[tag=:?] | desc /count limit 1"
+    t = Tag { tag = tag }
 
-incrementTagCount :: DB.Database -> String -> [(Int64, Maybe Tag)] -> IO Tag
-incrementTagCount database _ ((id, Just t) : _) =
-    DB.put database tagsCollection t' id >> return t'
-  where
-    t' = t { count = count t + 1 }
-incrementTagCount database tag _ =
-    DB.putNew database tagsCollection t >> return t
-  where
-    t = Tag tag 1
+    id = fromIntegral (hash tag) + fromIntegral (minBound :: Int)
 
 addTagToMedia :: String -> Media -> Media
 addTagToMedia tag media = media { tags = Just tags }

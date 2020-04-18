@@ -2,7 +2,6 @@
 module TagIntegrationTests ( tests ) where
 
 import qualified Data.HashSet         as Set
-import qualified Data.HashSet         as Set
 
 import           Database.EJDB2
 import qualified Database.EJDB2.Query as Query
@@ -43,6 +42,5 @@ addTags databaseIO = testCase "addTags" $ do
 
     secondTag = "second"
 
-    expectedTags = [ Just $ Tag { tag = firstTag, count = 2 }
-                   , Just $ Tag { tag = secondTag, count = 1 }
-                   ]
+    expectedTags =
+        [ Just $ Tag { tag = firstTag }, Just $ Tag { tag = secondTag } ]
