@@ -26,6 +26,8 @@ import           ReadToImport
 
 import           Repository
 
+import           Tag
+
 import           Upload
 
 import           Web.Scotty
@@ -48,6 +50,7 @@ run options@(Service.Options port homePath) = do
         deleteApiMedia repository
         postApiMediaMetadata repository
         postApiMediaThumbnails repository
+        postApiMediaTags repository
 
 resourcesPolicy :: Text -> Policy
 resourcesPolicy homePath = (hasPrefix "media/" <|> hasPrefix "media-thumbnails/"

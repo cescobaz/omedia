@@ -8,6 +8,8 @@ import qualified Database.EJDB2.Query as Query
 
 import           Media
 
+import           Read
+
 import           Repository           ( mediaCollection )
 
 import           Tag
@@ -35,12 +37,10 @@ addTags databaseIO = testCase "addTags" $ do
     Media.tags media' @?= Just (Set.fromList [ firstTag, secondTag ])
     media'' <- addTag database firstTag 1
     Media.tags media'' @?= Just (Set.fromList [ firstTag, secondTag ])
-    tags <- Query.fromString "@tags/* | asc /tag" >>= getList database
-    map snd tags @?= expectedTags
+    media''' <- getMediaById database 1
+    Media.tags media''' @?= Just (Set.fromList [ firstTag, secondTag ])
   where
     firstTag = "first tag"
 
     secondTag = "second"
 
-    expectedTags =
-        [ Just $ Tag { tag = firstTag }, Just $ Tag { tag = secondTag } ]
