@@ -7,7 +7,6 @@ import           Control.Monad.IO.Class
 import           Data.Int
 
 import qualified Database.EJDB2         as DB
-import qualified Database.EJDB2.Query   as Query
 
 import           Media
 
@@ -29,7 +28,7 @@ postApiMediaNormalize repository =
 
 normalizeAllMedia :: Repository -> IO ()
 normalizeAllMedia repository@(Repository homePath database) =
-    Query.fromString "@media/*" >>= DB.getList database
+    DB.getList database (DB.Query "@media/*" DB.noBind)
     >>= mapM_ (normalizeMedia repository)
 
 normalizeMedia :: Repository -> (Int64, Maybe Media) -> IO ()

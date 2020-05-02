@@ -1,16 +1,15 @@
 
 module TagIntegrationTests ( tests ) where
 
-import qualified Data.HashSet         as Set
+import qualified Data.HashSet     as Set
 
 import           Database.EJDB2
-import qualified Database.EJDB2.Query as Query
 
 import           Media
 
 import           Read
 
-import           Repository           ( mediaCollection )
+import           Repository       ( mediaCollection )
 
 import           Tag
 
@@ -39,8 +38,12 @@ addTags databaseIO = testCase "addTags" $ do
     Media.tags media'' @?= Just (Set.fromList [ firstTag, secondTag ])
     media''' <- getMediaById database 1
     Media.tags media''' @?= Just (Set.fromList [ firstTag, secondTag ])
+    tags <- getTags database
+    tags @?= expectedTags
   where
     firstTag = "first tag"
 
     secondTag = "second"
+
+    expectedTags = [ Tag firstTag, Tag secondTag ]
 

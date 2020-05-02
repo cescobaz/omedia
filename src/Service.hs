@@ -41,6 +41,7 @@ run options@(Service.Options port homePath) = do
     scotty port $ do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath
+        getApiMediaTags repository
         postApiMediaNormalize repository
         getApiMedia repository
         getApiMediaById repository

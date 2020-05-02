@@ -15,7 +15,6 @@ import           Data.Int
 import           Data.Maybe
 
 import           Database.EJDB2
-import           Database.EJDB2.Query   as Query
 
 import           Media
 
@@ -41,12 +40,10 @@ defaultMediaQuery :: MediaQuery
 defaultMediaQuery = MediaQuery { offset = 0, limit = 500 }
 
 getMedia :: Repository -> MediaQuery -> IO [Media]
-getMedia (Repository _ database) mediaQuery = do
-    query <- Query.fromString $ "@" ++ mediaCollection
-        ++ "/* | desc /date desc /importDate skip :offset limit :limit"
-    Query.setI64 (fromIntegral $ offset mediaQuery) "offset" query
-    Query.setI64 (fromIntegral $ limit mediaQuery) "limit" query
-    catMaybes <$> getList' database query
+getMedia (Repository _ database) mediaQuery = catMaybes
+    <$> getList' database (Query query noBind)
+  where
+    query = "@" ++ mediaCollection ++ "/* | desc /date desc /importDate"
 
 getMediaById :: Database -> Int64 -> IO Media
 getMediaById database id = getById database mediaCollection id

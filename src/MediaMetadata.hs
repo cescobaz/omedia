@@ -18,7 +18,6 @@ import qualified Data.Time.Format       as TimeFormat
 import           Data.Word
 
 import           Database.EJDB2
-import           Database.EJDB2.Query   as Query
 
 import qualified Graphics.HsExif        as E
 
