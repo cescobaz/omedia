@@ -4,6 +4,7 @@
 module Tag
     ( Tag(..)
     , postApiMediaTags
+    , postApiMediaBulkTags
     , getApiMediaTags
     , addTagsBulk
     , addTags
@@ -36,17 +37,22 @@ import           Web.Scotty
 newtype Tag = Tag { tag :: String }
     deriving ( Eq, Show, Generic )
 
+instance ToJSON Tag
+
 data PostTags = PostTags { media :: [Int64], tags :: [String] }
     deriving ( Eq, Show, Generic )
 
-instance FromJSON Tag
-
-instance ToJSON Tag
+instance FromJSON PostTags
 
 postApiMediaTags :: Repository -> ScottyM ()
-postApiMediaTags (Repository _ database) = post "/api/media/:id/tags/" $
-    jsonData >>= \(Tag tag) ->
-    read <$> param "id" >>= liftIO . addTags database [ tag ] >>= json
+postApiMediaTags (Repository _ database) =
+    post "/api/media/:id/tags/" $ jsonData
+    >>= \tags -> read <$> param "id" >>= liftIO . addTags database tags >>= json
+
+postApiMediaBulkTags :: Repository -> ScottyM ()
+postApiMediaBulkTags (Repository _ database) = post "/api/media/tags/" $
+    jsonData >>= \(PostTags media tags) ->
+    liftIO (addTagsBulk database tags media) >>= json
 
 addTagsBulk :: DB.Database -> [String] -> [Int64] -> IO [Media]
 addTagsBulk database tags = mapM (addTags database tags)
