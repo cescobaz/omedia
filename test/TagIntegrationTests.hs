@@ -20,21 +20,21 @@ tests :: TestTree
 tests = withResource initDatabase
                      close
                      (\databaseIO ->
-                      testGroup "TagIntegration" [ addTags databaseIO ])
+                      testGroup "TagIntegration" [ addTagsTest databaseIO ])
 
 initDatabase :: IO Database
 initDatabase = open (minimalOptions "./test/tags.ejdb" [ truncateOpenFlags ])
     >>= \database ->
     putNew database mediaCollection emptyMedia >> return database
 
-addTags :: IO Database -> TestTree
-addTags databaseIO = testCase "addTags" $ do
+addTagsTest :: IO Database -> TestTree
+addTagsTest databaseIO = testCase "addTags" $ do
     database <- databaseIO
-    media <- addTag database firstTag 1
+    media <- addTags database [ firstTag ] 1
     Media.tags media @?= Just (Set.singleton firstTag)
-    media' <- addTag database secondTag 1
+    media' <- addTags database [ secondTag ] 1
     Media.tags media' @?= Just (Set.fromList [ firstTag, secondTag ])
-    media'' <- addTag database firstTag 1
+    media'' <- addTags database [ firstTag ] 1
     Media.tags media'' @?= Just (Set.fromList [ firstTag, secondTag ])
     media''' <- getMediaById database 1
     Media.tags media''' @?= Just (Set.fromList [ firstTag, secondTag ])

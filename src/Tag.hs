@@ -5,8 +5,9 @@ module Tag
     ( Tag(..)
     , postApiMediaTags
     , getApiMediaTags
-    , addTag
-    , addTagToMedia
+    , addTagsBulk
+    , addTags
+    , addTagsToMedia
     , removeTagFromMedia
     , getTags
     ) where
@@ -35,6 +36,9 @@ import           Web.Scotty
 newtype Tag = Tag { tag :: String }
     deriving ( Eq, Show, Generic )
 
+data PostTags = PostTags { media :: [Int64], tags :: [String] }
+    deriving ( Eq, Show, Generic )
+
 instance FromJSON Tag
 
 instance ToJSON Tag
@@ -42,24 +46,29 @@ instance ToJSON Tag
 postApiMediaTags :: Repository -> ScottyM ()
 postApiMediaTags (Repository _ database) = post "/api/media/:id/tags/" $
     jsonData >>= \(Tag tag) ->
-    read <$> param "id" >>= liftIO . addTag database tag >>= json
+    read <$> param "id" >>= liftIO . addTags database [ tag ] >>= json
+
+addTagsBulk :: DB.Database -> [String] -> [Int64] -> IO [Media]
+addTagsBulk database tags = mapM (addTags database tags)
+
+addTags :: DB.Database -> [String] -> Int64 -> IO Media
+addTags database tags = updateMedia database (addTagsToMedia tags)
+
+addTagsToMedia :: [String] -> Media -> Media
+addTagsToMedia tags media = media { Media.tags = Just tags' }
+  where
+    tagsSetToAdd = Set.fromList tags
+
+    tags' = maybe tagsSetToAdd (Set.union tagsSetToAdd) (Media.tags media)
+
+removeTagFromMedia :: String -> Media -> Media
+removeTagFromMedia tag media = media { Media.tags = tags }
+  where
+    tags = Set.delete tag <$> Media.tags media
 
 getApiMediaTags :: Repository -> ScottyM ()
 getApiMediaTags (Repository _ database) = get "/api/media/tags/" $
     liftIO (getTags database) >>= json
-
-addTag :: DB.Database -> String -> Int64 -> IO Media
-addTag database tag = updateMedia database (addTagToMedia tag)
-
-addTagToMedia :: String -> Media -> Media
-addTagToMedia tag media = media { tags = Just tags }
-  where
-    tags = maybe (Set.singleton tag) (Set.insert tag) (Media.tags media)
-
-removeTagFromMedia :: String -> Media -> Media
-removeTagFromMedia tag media = media { tags = tags }
-  where
-    tags = Set.delete tag <$> Media.tags media
 
 getTags :: DB.Database -> IO [Tag]
 getTags database = fmap Tag . List.sort . Set.toList

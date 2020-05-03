@@ -12,23 +12,55 @@ module Read
 import           Control.Monad.IO.Class
 
 import           Data.Int
+import qualified Data.List              as L
 import           Data.Maybe
+import           Data.Text.Lazy
 
 import           Database.EJDB2
 
-import           Media
+import qualified Media                  as M
 
 import           Repository
 
 import           Web.Scotty
 
-data MediaQuery = MediaQuery { offset :: Int, limit :: Int }
+data MediaQuery = MediaQuery { tags :: [Text], offset :: Int, limit :: Int }
 
 getApiMedia :: Repository -> ScottyM ()
 getApiMedia repository = get "/api/media/" $ do
-    let query = defaultMediaQuery
+    query <- mediaQueryFromParams <$> params
     media <- liftIO $ getMedia repository query
     json media
+
+mediaQueryFromParams :: [Param] -> MediaQuery
+mediaQueryFromParams params =
+    MediaQuery { tags   = maybe [] (splitOn ",") (lookup "tags" params)
+               , offset = maybe 0 (read . unpack) (lookup "offset" params)
+               , limit  = maybe 25 (read . unpack) (lookup "limit" params)
+               }
+
+tagsFilterQuery :: [Text] -> String
+tagsFilterQuery [] = ""
+tagsFilterQuery [ tag ] = "\"" ++ unpack (backSlash tag) ++ "\""
+tagsFilterQuery (tag : tags) = tagsFilterQuery [ tag ] ++ tagsFilterQuery tags
+
+backSlash :: Text -> Text
+backSlash = replace "\"" "\\\""
+
+mediaQueryToQuery :: MediaQuery -> Query ()
+mediaQueryToQuery mediaQuery
+    | not (L.null (tags mediaQuery)) =
+        Query ("@media/tags/[** in [" ++ tagsFilterQuery (tags mediaQuery)
+               ++ "]] | limit :limit skip :offset " ++ sortQuery) $ do
+            setI64 (fromIntegral $ limit mediaQuery) "limit"
+            setI64 (fromIntegral $ offset mediaQuery) "offset"
+    | otherwise = Query ("@media/[* not ni \"tags\"] or /[tags not ni \"trash\"] | limit :limit skip :offset "
+                         ++ sortQuery) $ do
+        setI64 (fromIntegral $ limit mediaQuery) "limit"
+        setI64 (fromIntegral $ offset mediaQuery) "offset"
+
+sortQuery :: String
+sortQuery = "desc /date desc /importDate"
 
 getApiMediaById :: Repository -> ScottyM ()
 getApiMediaById (Repository _ database) =
@@ -37,16 +69,14 @@ getApiMediaById (Repository _ database) =
          >>= json)
 
 defaultMediaQuery :: MediaQuery
-defaultMediaQuery = MediaQuery { offset = 0, limit = 500 }
+defaultMediaQuery = MediaQuery { tags = [], offset = 0, limit = 500 }
 
-getMedia :: Repository -> MediaQuery -> IO [Media]
+getMedia :: Repository -> MediaQuery -> IO [M.Media]
 getMedia (Repository _ database) mediaQuery = catMaybes
-    <$> getList' database (Query query noBind)
-  where
-    query = "@" ++ mediaCollection ++ "/* | desc /date desc /importDate"
+    <$> getList' database (mediaQueryToQuery mediaQuery)
 
-getMediaById :: Database -> Int64 -> IO Media
+getMediaById :: Database -> Int64 -> IO M.Media
 getMediaById database id = getById database mediaCollection id
     >>= maybe (fail "media not found")
-              (\media -> return $ media { Media.id = Just id })
+              (\media -> return $ media { M.id = Just id })
 

@@ -58,7 +58,7 @@ defaultGetMediaTest m = testCase "defaultGetMediaTest"
                                       photos <- getMedia repository query
                                       expectedMedia @=? photos)
   where
-    query = MediaQuery { offset = 0, limit = 50 }
+    query = MediaQuery { Read.tags = [], offset = 0, limit = 50 }
 
     expectedMedia =
         [ minimalMedia 2 "/ciao-2.jpg", minimalMedia 1 "/ciao.jpg" ]
@@ -71,6 +71,6 @@ getMediaWithLimitTest m =
                   photos <- getMedia repository query
                   expectedMedia @=? photos)
   where
-    query = MediaQuery { offset = 0, limit = 1 }
+    query = MediaQuery { Read.tags = [], offset = 0, limit = 1 }
 
     expectedMedia = [ minimalMedia 2 "/ciao-2.jpg" ]

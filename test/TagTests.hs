@@ -21,8 +21,8 @@ tests = testGroup "Tag"
 
 addFirstTagTest :: TestTree
 addFirstTagTest = testCase "addFirstTag" $ do
-    addTagToMedia tag media @?= expectedMedia
-    addTagToMedia tag media' @?= expectedMedia
+    addTagsToMedia [ tag ] media @?= expectedMedia
+    addTagsToMedia [ tag ] media' @?= expectedMedia
   where
     media = emptyMedia { tags = Nothing }
 
@@ -33,7 +33,7 @@ addFirstTagTest = testCase "addFirstTag" $ do
     tag = "first"
 
 addTagTest :: TestTree
-addTagTest = testCase "addTag" $ addTagToMedia tag media @?= expectedMedia
+addTagTest = testCase "addTag" $ addTagsToMedia [ tag ] media @?= expectedMedia
   where
     media =
         emptyMedia { tags = Just $ Set.fromList [ "first", "second", "third" ]
