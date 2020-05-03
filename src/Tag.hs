@@ -5,6 +5,7 @@ module Tag
     ( Tag(..)
     , postApiMediaTags
     , postApiMediaBulkTags
+    , deleteApiMediaTagsBulk
     , getApiMediaTags
     , addTagsBulk
     , addTags
@@ -39,10 +40,10 @@ newtype Tag = Tag { tag :: String }
 
 instance ToJSON Tag
 
-data PostTags = PostTags { media :: [Int64], tags :: [String] }
+data BulkTagsRequest = BulkTagsRequest { media :: [Int64], tags :: [String] }
     deriving ( Eq, Show, Generic )
 
-instance FromJSON PostTags
+instance FromJSON BulkTagsRequest
 
 postApiMediaTags :: Repository -> ScottyM ()
 postApiMediaTags (Repository _ database) =
@@ -51,7 +52,7 @@ postApiMediaTags (Repository _ database) =
 
 postApiMediaBulkTags :: Repository -> ScottyM ()
 postApiMediaBulkTags (Repository _ database) = post "/api/media/tags/" $
-    jsonData >>= \(PostTags media tags) ->
+    jsonData >>= \(BulkTagsRequest media tags) ->
     liftIO (addTagsBulk database tags media) >>= json
 
 addTagsBulk :: DB.Database -> [String] -> [Int64] -> IO [Media]
@@ -67,10 +68,24 @@ addTagsToMedia tags media = media { Media.tags = Just tags' }
 
     tags' = maybe tagsSetToAdd (Set.union tagsSetToAdd) (Media.tags media)
 
-removeTagFromMedia :: String -> Media -> Media
-removeTagFromMedia tag media = media { Media.tags = tags }
+deleteApiMediaTagsBulk :: Repository -> ScottyM ()
+deleteApiMediaTagsBulk (Repository _ database) = delete "/api/media/tags/" $
+    jsonData >>= \(BulkTagsRequest media tags) ->
+    liftIO (removeTagsBulk database tags media) >>= json
+
+removeTagsBulk :: DB.Database -> [String] -> [Int64] -> IO [Media]
+removeTagsBulk database tags = mapM (removeTags database tags)
+
+removeTags :: DB.Database -> [String] -> Int64 -> IO Media
+removeTags database tags = updateMedia database (removeTagsFromMedia tags)
+
+removeTagsFromMedia :: [String] -> Media -> Media
+removeTagsFromMedia tags media = media { Media.tags = tags' }
   where
-    tags = Set.delete tag <$> Media.tags media
+    tags' = flip Set.difference (Set.fromList tags) <$> Media.tags media
+
+removeTagFromMedia :: String -> Media -> Media
+removeTagFromMedia tag = removeTagsFromMedia [ tag ]
 
 getApiMediaTags :: Repository -> ScottyM ()
 getApiMediaTags (Repository _ database) = get "/api/media/tags/" $

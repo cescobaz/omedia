@@ -42,6 +42,7 @@ run options@(Service.Options port homePath) = do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath
         postApiMediaBulkTags repository
+        deleteApiMediaTagsBulk repository
         getApiMediaTags repository
         postApiMediaNormalize repository
         getApiMedia repository
