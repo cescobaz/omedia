@@ -2,6 +2,7 @@
 
 module Normalize where
 
+import           Control.Exception
 import           Control.Monad.IO.Class
 
 import           Data.Int
@@ -14,11 +15,7 @@ import           MediaMetadata
 
 import           MediaThumbnails
 
-import           Read
-
 import           Repository
-
-import           Update
 
 import           Web.Scotty
 
@@ -27,9 +24,12 @@ postApiMediaNormalize repository =
     post "/api/media/normalize" (liftIO $ normalizeAllMedia repository)
 
 normalizeAllMedia :: Repository -> IO ()
-normalizeAllMedia repository@(Repository homePath database) =
+normalizeAllMedia repository@(Repository _ database) =
     DB.getList database (DB.Query "@media/*" DB.noBind)
-    >>= mapM_ (normalizeMedia repository)
+    >>= mapM_ (\m -> catch (normalizeMedia repository m
+                            >> putStrLn (show (Media.filePath <$> snd m)
+                                         ++ " normalized"))
+                           (print :: IOException -> IO ()))
 
 normalizeMedia :: Repository -> (Int64, Maybe Media) -> IO ()
 normalizeMedia _ (_, Nothing) = return ()

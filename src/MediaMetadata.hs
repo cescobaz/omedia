@@ -64,7 +64,7 @@ rawMetadataFromFile :: String -> IO (Map.Map E.ExifTag E.ExifValue)
 rawMetadataFromFile filePath = do
     result <- E.parseFileExif filePath
     case result of
-        Left message -> fail message
+        Left message -> fail $ "filePath: " ++ filePath ++ " error: " ++ message
         Right metadatas -> return metadatas
 
 gpsFromRawMetadata :: RawExifMetadata -> Maybe GPS
