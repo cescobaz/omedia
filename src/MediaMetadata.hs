@@ -32,6 +32,8 @@ import           Update
 
 import           Web.Scotty
 
+type RawExifMetadata = Map.Map E.ExifTag E.ExifValue
+
 postApiMediaMetadata :: Repository -> ScottyM ()
 postApiMediaMetadata (Repository homePath database) =
     post "/api/media/:id/metadata" $ (read <$> param "id") >>= liftIO
@@ -41,43 +43,79 @@ updateMediaMetadata :: Text -> Media -> IO Media
 updateMediaMetadata homePath media =
     maybe (fail "no filePath for media")
           (\mediaFilePath ->
-           metadataFromFile (unpack homePath </> mediaFilePath) >>= \metadata ->
-           return media { metadata = Just metadata
-                        , date     = utcDateFromMetadata metadata
-                        })
+           rawMetadataFromFile (unpack homePath </> mediaFilePath)
+           >>= \rawMetadata -> do
+               let metadata = createMetadata rawMetadata
+               return media { metadata = Just metadata
+                            , date     = utcDateFromMetadata metadata
+                            , gps      = gpsFromRawMetadata rawMetadata
+                            })
           (Media.filePath media)
 
-metadataFromFile :: String -> IO Metadata
-metadataFromFile filePath = do
+metadataFromFile :: FilePath -> IO Metadata
+metadataFromFile filePath = createMetadata <$> rawMetadataFromFile filePath
+
+createMetadata :: Map.Map E.ExifTag E.ExifValue -> Metadata
+createMetadata rawMetadata =
+    (mapRawMetadata rawMetadata
+     . mapLowLevelMetadata (toLowLevelMetadata rawMetadata)) emptyMetadata
+
+rawMetadataFromFile :: String -> IO (Map.Map E.ExifTag E.ExifValue)
+rawMetadataFromFile filePath = do
     result <- E.parseFileExif filePath
     case result of
         Left message -> fail message
-        Right metadatas -> do
-            let metadatas' = Map.mapKeys (\(E.ExifTag _ _ k _) -> k) metadatas
-            return $ mapMetadata metadatas'
+        Right metadatas -> return metadatas
 
-mapMetadata :: Map.Map Word16 E.ExifValue -> Metadata
-mapMetadata metadatas =
-    Metadata { dateTimeOriginal = parseExifTag 0x9003 parseExifString metadatas
+gpsFromRawMetadata :: RawExifMetadata -> Maybe GPS
+gpsFromRawMetadata rawMetadata = E.getGpsLatitudeLongitude rawMetadata
+    >>= \(lat, lon) -> return $ GPS lat lon
+
+toLowLevelMetadata
+    :: Map.Map E.ExifTag E.ExifValue -> Map.Map Word16 E.ExifValue
+toLowLevelMetadata = Map.mapKeys (\(E.ExifTag _ _ k _) -> k)
+
+mapRawMetadata :: Map.Map E.ExifTag E.ExifValue -> Metadata -> Metadata
+mapRawMetadata rawMetadata metadata =
+    metadata { gpsAltitude     =
+                   Map.lookup E.gpsAltitude rawMetadata >>= parseExifDouble
+             , gpsAltitudeRef  =
+                   Map.lookup E.gpsAltitudeRef rawMetadata >>= parseExifString
+             , gpsLatitude     =
+                   Map.lookup E.gpsLatitude rawMetadata >>= parseExifDoubleList
+             , gpsLatitudeRef  =
+                   Map.lookup E.gpsLatitudeRef rawMetadata >>= parseExifString
+             , gpsLongitude    =
+                   Map.lookup E.gpsLongitude rawMetadata >>= parseExifDoubleList
+             , gpsLongitudeRef =
+                   Map.lookup E.gpsLongitudeRef rawMetadata >>= parseExifString
+             }
+
+mapLowLevelMetadata :: Map.Map Word16 E.ExifValue -> Metadata -> Metadata
+mapLowLevelMetadata lowLevelMetadata metadata =
+    metadata { dateTimeOriginal =
+                   parseExifTag 0x9003 parseExifString lowLevelMetadata
              , subSecTimeOriginal =
-                   parseExifTag 0x9291 parseExifString metadatas
+                   parseExifTag 0x9291 parseExifString lowLevelMetadata
              , offsetTimeOriginal =
-                   parseExifTag 0x9011 parseExifString metadatas
-             , dateTime = parseExifTag 0x0132 parseExifString metadatas
-             , subSecTime = parseExifTag 0x9290 parseExifString metadatas
-             , offsetTime = parseExifTag 0x9010 parseExifString metadatas
+                   parseExifTag 0x9011 parseExifString lowLevelMetadata
+             , dateTime = parseExifTag 0x0132 parseExifString lowLevelMetadata
+             , subSecTime =
+                   parseExifTag 0x9290 parseExifString lowLevelMetadata
+             , offsetTime =
+                   parseExifTag 0x9010 parseExifString lowLevelMetadata
              , dateTimeDigitized =
-                   parseExifTag 0x9004 parseExifString metadatas
+                   parseExifTag 0x9004 parseExifString lowLevelMetadata
              , subSecTimeDigitized =
-                   parseExifTag 0x9292 parseExifString metadatas
+                   parseExifTag 0x9292 parseExifString lowLevelMetadata
              , offsetTimeDigitized =
-                   parseExifTag 0x9012 parseExifString metadatas
-             , orientation = parseExifTag 0x0112 parseExifInt metadatas
+                   parseExifTag 0x9012 parseExifString lowLevelMetadata
+             , orientation = parseExifTag 0x0112 parseExifInt lowLevelMetadata
              , uniqueCameraModel =
-                   parseExifTag 0xc614 parseExifString metadatas
+                   parseExifTag 0xc614 parseExifString lowLevelMetadata
              , localizedCameraModel =
-                   parseExifTag 0xc615 parseExifString metadatas
-             , model = parseExifTag 0x0110 parseExifString metadatas
+                   parseExifTag 0xc615 parseExifString lowLevelMetadata
+             , model = parseExifTag 0x0110 parseExifString lowLevelMetadata
              }
 
 parseExifTag :: Word16
@@ -89,6 +127,16 @@ parseExifTag code parse metadatas = Map.lookup code metadatas >>= parse
 parseExifInt :: E.ExifValue -> Maybe Int
 parseExifInt (E.ExifNumber number) = Just $ fromIntegral number
 parseExifInt _ = Nothing
+
+parseExifDouble :: E.ExifValue -> Maybe Double
+parseExifDouble (E.ExifRational numerator denominator) =
+    Just (fromIntegral numerator / fromIntegral denominator)
+parseExifDouble _ = Nothing
+
+parseExifDoubleList :: E.ExifValue -> Maybe [Double]
+parseExifDoubleList (E.ExifRationalList ratioalList) =
+    Just (Prelude.map (\(n, d) -> fromIntegral n / fromIntegral d) ratioalList)
+parseExifDoubleList _ = Nothing
 
 parseExifString :: E.ExifValue -> Maybe String
 parseExifString (E.ExifText string) = Just string

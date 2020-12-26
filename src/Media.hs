@@ -3,6 +3,7 @@
 module Media
     ( Media(..)
     , Metadata(..)
+    , GPS(..)
     , emptyMetadata
     , minimalMedia
     , emptyMedia
@@ -32,6 +33,12 @@ data Metadata =
              , uniqueCameraModel :: Maybe String
              , localizedCameraModel :: Maybe String
              , model :: Maybe String
+             , gpsLatitude :: Maybe [Double]
+             , gpsLatitudeRef :: Maybe String
+             , gpsLongitude :: Maybe [Double]
+             , gpsLongitudeRef :: Maybe String
+             , gpsAltitude :: Maybe Double
+             , gpsAltitudeRef :: Maybe String
              }
     deriving ( Eq, Show, Generic )
 
@@ -54,7 +61,20 @@ emptyMetadata =
              , uniqueCameraModel = Nothing
              , localizedCameraModel = Nothing
              , model = Nothing
+             , gpsLatitude = Nothing
+             , gpsLatitudeRef = Nothing
+             , gpsLongitude = Nothing
+             , gpsLongitudeRef = Nothing
+             , gpsAltitude = Nothing
+             , gpsAltitudeRef = Nothing
              }
+
+data GPS = GPS { latitude :: Double, longitude :: Double }
+    deriving ( Eq, Show, Generic )
+
+instance ToJSON GPS
+
+instance FromJSON GPS
 
 data Media = Media { id         :: Maybe Int64
                    , filePath   :: Maybe String
@@ -63,6 +83,7 @@ data Media = Media { id         :: Maybe Int64
                    , tags       :: Maybe (Set.HashSet String)
                    , metadata   :: Maybe Metadata
                    , thumbnails :: Maybe [Thumbnail]
+                   , gps        :: Maybe GPS
                    }
     deriving ( Eq, Show, Generic )
 
@@ -78,6 +99,7 @@ emptyMedia = Media { Media.id   = Nothing
                    , tags       = Nothing
                    , metadata   = Nothing
                    , thumbnails = Nothing
+                   , gps        = Nothing
                    }
 
 minimalMedia :: Int64 -> String -> Media
