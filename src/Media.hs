@@ -29,6 +29,9 @@ data Metadata =
              , subSecTimeDigitized :: Maybe String
              , offsetTimeDigitized :: Maybe String
              , orientation :: Maybe Int
+             , uniqueCameraModel :: Maybe String
+             , localizedCameraModel :: Maybe String
+             , model :: Maybe String
              }
     deriving ( Eq, Show, Generic )
 
@@ -48,6 +51,9 @@ emptyMetadata =
              , subSecTimeDigitized = Nothing
              , offsetTimeDigitized = Nothing
              , orientation = Nothing
+             , uniqueCameraModel = Nothing
+             , localizedCameraModel = Nothing
+             , model = Nothing
              }
 
 data Media = Media { id         :: Maybe Int64

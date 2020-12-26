@@ -2,8 +2,6 @@
 
 module Service where
 
-import           Control.Monad.IO.Class
-
 import           Data.Text
 
 import           Delete

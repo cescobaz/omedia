@@ -7,17 +7,14 @@ module MediaMetadata
     , utcDateFromMetadata
     ) where
 
+import           Control.Applicative
 import           Control.Monad.IO.Class
 
-import           Data.Int
 import qualified Data.Map.Strict        as Map
-import           Data.Maybe
 import           Data.Text
 import qualified Data.Time.Clock        as Clock
 import qualified Data.Time.Format       as TimeFormat
 import           Data.Word
-
-import           Database.EJDB2
 
 import qualified Graphics.HsExif        as E
 
@@ -76,6 +73,11 @@ mapMetadata metadatas =
              , offsetTimeDigitized =
                    parseExifTag 0x9012 parseExifString metadatas
              , orientation = parseExifTag 0x0112 parseExifInt metadatas
+             , uniqueCameraModel =
+                   parseExifTag 0xc614 parseExifString metadatas
+             , localizedCameraModel =
+                   parseExifTag 0xc615 parseExifString metadatas
+             , model = parseExifTag 0x0110 parseExifString metadatas
              }
 
 parseExifTag :: Word16
@@ -93,9 +95,8 @@ parseExifString (E.ExifText string) = Just string
 parseExifString _ = Nothing
 
 utcDateFromMetadata :: Metadata -> Maybe String
-utcDateFromMetadata metadata = normalizeDateString =<< case date of
-    Just date -> Just date
-    Nothing -> maybe date'' Just date'
+utcDateFromMetadata metadata = (date <|> (date' <|> date''))
+    >>= normalizeDateString
   where
     date = mkDateString (dateTimeOriginal metadata)
                         (subSecTimeOriginal metadata)
