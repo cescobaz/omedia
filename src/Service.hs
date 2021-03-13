@@ -4,6 +4,8 @@ module Service where
 
 import           Data.Text
 
+import qualified Database.EJDB2                       as Database
+
 import           Delete
 
 import           Import
@@ -36,6 +38,10 @@ run :: Service.Options -> IO ()
 run options@(Service.Options port homePath) = do
     let databasePath = Data.Text.concat [ homePath, "/database.ejdb" ]
     repository <- Repository.create homePath databasePath
+    Database.ensureIndex (database repository)
+                         mediaCollection
+                         "/date /importDate"
+                         [ Database.strIndexMode ]
     scotty port $ do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath

@@ -55,6 +55,7 @@ createMediaFromImage' = testCase "createMediaFromImage'" $ do
                       , Media.dateTimeDigitized = Just "2020:03:07 12:05:05"
                       , Media.offsetTimeDigitized = Just "+01:00"
                       , Media.orientation = Just 1
+                      , Media.model = Just "iPhone 11 Pro"
                       }
 
     date = Just "2020-03-07T11:05:05.994Z"

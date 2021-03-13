@@ -7,6 +7,7 @@ import           Control.Exception
 import           Control.Monad.IO.Class
 
 import           Data.Aeson             ( ToJSON )
+import           Data.Maybe
 import           Data.Text
 
 import           Database.EJDB2
@@ -65,12 +66,12 @@ importSingleFile (Repository homePath database) filePath = do
     if not exists
         then return ("file to import doesn't exists", Nothing)
         else do
-            media <- catch (fromFile filePath)
-                           ((\e -> print e
-                             >> return (emptyMedia { Media.filePath =
-                                                         Just filePath
-                                                   }))
-                            :: IOException -> IO Media)
+            media
+                <- catch (fromFile filePath)
+                         ((\e -> print e
+                           >> return (emptyMedia { Media.filePath =
+                                                       Just filePath
+                                                 })) :: IOException -> IO Media)
             let filename = takeFileName filePath
             let suggestedMediaFilePath =
                     unpack homePath </> F.media </> filename
@@ -79,15 +80,17 @@ importSingleFile (Repository homePath database) filePath = do
             case mediaFilePath of
                 Nothing -> return ("already imported", Just media)
                 Just mediaFilePath -> do
-                    renameFile filePath mediaFilePath
-                    date <- Time.currentUTCDateTimeString
-                    thumbnails <- createMediaThumbnails homePath mediaFilePath
+                    now <- Time.currentUTCDateTimeString
+                    thumbnails <- createMediaThumbnails homePath filePath
                     let media' =
                             media { filePath   = Just $ F.media </> filename
-                                  , importDate = Just date
+                                  , importDate = Just now
+                                  , date       =
+                                        Just (fromMaybe now (date media))
                                   , thumbnails = Just thumbnails
                                   }
                     id <- putNew database mediaCollection media'
+                    renameFile filePath mediaFilePath
                     return ( "ok"
                            , Just $ media' { id = Just $ fromIntegral id }
                            )

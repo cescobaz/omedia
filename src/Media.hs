@@ -11,13 +11,17 @@ module Media
     , isSuffixAllowed
     ) where
 
-import           Data.Aeson   ( FromJSON, ToJSON )
-import           Data.HashSet as Set ( HashSet )
+import           Data.Aeson     ( FromJSON, ToJSON )
+import           Data.HashSet   as Set ( HashSet )
 import           Data.Int
+
+import           Database.EJDB2 ( EJDB2IDObject(..), FromJBL, ToJBL )
 
 import           GHC.Generics
 
-import           Thumbnail    ( Thumbnail )
+import           Prelude        hiding ( id )
+
+import           Thumbnail      ( Thumbnail )
 
 data Metadata =
     Metadata { dateTimeOriginal :: Maybe String
@@ -45,6 +49,10 @@ data Metadata =
 instance ToJSON Metadata
 
 instance FromJSON Metadata
+
+instance ToJBL Metadata
+
+instance FromJBL Metadata
 
 emptyMetadata :: Metadata
 emptyMetadata =
@@ -76,6 +84,10 @@ instance ToJSON GPS
 
 instance FromJSON GPS
 
+instance ToJBL GPS
+
+instance FromJBL GPS
+
 data Media = Media { id         :: Maybe Int64
                    , filePath   :: Maybe String
                    , importDate :: Maybe String
@@ -87,9 +99,16 @@ data Media = Media { id         :: Maybe Int64
                    }
     deriving ( Eq, Show, Generic )
 
+instance EJDB2IDObject Media where
+    setId a m = m { id = Just a }
+
 instance ToJSON Media
 
 instance FromJSON Media
+
+instance ToJBL Media
+
+instance FromJBL Media
 
 emptyMedia :: Media
 emptyMedia = Media { Media.id   = Nothing

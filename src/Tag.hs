@@ -47,8 +47,8 @@ instance FromJSON BulkTagsRequest
 
 postApiMediaTags :: Repository -> ScottyM ()
 postApiMediaTags (Repository _ database) =
-    post "/api/media/:id/tags/" $ jsonData
-    >>= \tags -> read <$> param "id" >>= liftIO . addTags database tags >>= json
+    post "/api/media/:id/tags/" $ jsonData >>= \tags ->
+    (param "id" >>= (liftIO . addTags database tags) . read) >>= json
 
 postApiMediaBulkTags :: Repository -> ScottyM ()
 postApiMediaBulkTags (Repository _ database) = post "/api/media/tags/" $
