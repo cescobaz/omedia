@@ -49,18 +49,27 @@ backSlash = replace "\"" "\\\""
 
 mediaQueryToQuery :: MediaQuery -> Query ()
 mediaQueryToQuery mediaQuery
-    | (not . L.null) (tags mediaQuery) =
-        Query ("@media/tags/[** in [" ++ tagsFilterQuery (tags mediaQuery)
-               ++ "]] | limit :limit skip :offset " ++ sortQuery) $ do
-            liftIO (putStrLn ("@media/tags/[** in ["
-                              ++ tagsFilterQuery (tags mediaQuery)
-                              ++ "]] | limit :limit skip :offset " ++ sortQuery))
+    | (not . L.null) t =
+        Query ("@media/tags/[** in [" ++ tagsFilterQuery t ++ "]]"
+               ++ trashFilterIfNeeds True t ++ " | limit :limit skip :offset "
+               ++ sortQuery) $ do
             setI64 (fromIntegral $ limit mediaQuery) "limit"
             setI64 (fromIntegral $ offset mediaQuery) "offset"
-    | otherwise = Query ("@media/[* not ni \"tags\"] or /[tags not ni \"trash\"] | limit :limit skip :offset "
-                         ++ sortQuery) $ do
+    | otherwise = Query ("@media" ++ trashFilterIfNeeds False t
+                         ++ " | limit :limit skip :offset " ++ sortQuery) $ do
         setI64 (fromIntegral $ limit mediaQuery) "limit"
         setI64 (fromIntegral $ offset mediaQuery) "offset"
+  where
+    t = tags mediaQuery
+
+trashFilter :: Bool -> String
+trashFilter False = "/[* not ni \"tags\"] and /[tags not ni \"trash\"]"
+trashFilter True = " and " ++ trashFilter False
+
+trashFilterIfNeeds :: Bool -> [Text] -> String
+trashFilterIfNeeds prefixAnd tags
+    | pack "trash" `L.elem` tags = ""
+    | otherwise = trashFilter prefixAnd
 
 sortQuery :: String
 sortQuery = "desc /date desc /importDate"
