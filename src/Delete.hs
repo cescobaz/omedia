@@ -6,6 +6,7 @@ import           Control.Exception
 import           Control.Monad.IO.Class
 
 import           Data.Int
+import           Data.Text
 
 import qualified Database.EJDB2            as EJDB2
 
@@ -22,6 +23,7 @@ import           Read
 import           Repository
 
 import           System.Directory
+import           System.FilePath
 
 import           Web.Scotty
 
@@ -30,7 +32,7 @@ deleteApiMedia repository = delete "/api/media/:id" $
     param "id" >>= liftIO . removeMedia repository >> status status204
 
 removeMedia :: Repository -> Int64 -> IO ()
-removeMedia (Repository homePath database) id = getMediaById database id
-    >>= maybe (fail "no filePath for media")
-              (\filePath -> File.removeFileIfExists filePath
-               >> EJDB2.delete database mediaCollection id) . Media.filePath
+removeMedia (Repository homePath database) id =
+    (getMediaById database id
+     >>= maybe (return ()) (File.removeFileIfExists . (unpack homePath </>))
+     . Media.filePath) >> EJDB2.delete database mediaCollection id
