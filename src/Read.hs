@@ -42,7 +42,8 @@ mediaQueryFromParams params =
 tagsFilterQuery :: [Text] -> String
 tagsFilterQuery [] = ""
 tagsFilterQuery [ tag ] = "\"" ++ unpack (backSlash tag) ++ "\""
-tagsFilterQuery (tag : tags) = tagsFilterQuery [ tag ] ++ tagsFilterQuery tags
+tagsFilterQuery (tag : tags) =
+    tagsFilterQuery [ tag ] ++ "," ++ tagsFilterQuery tags
 
 backSlash :: Text -> Text
 backSlash = replace "\"" "\\\""
