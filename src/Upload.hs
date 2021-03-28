@@ -52,9 +52,8 @@ postToImport (Repository homePath _) = post "/to-import/" $ do
 
 boundary :: ActionM ST.Text
 boundary = do
-    contentType <- header "content-type"
-    contentType <- justOrFail contentType "no content-type"
-    contentType <- parseContentType $ LT.unpack contentType
+    contentType <- header "content-type" >>= flip justOrFail "no content-type"
+        >>= parseContentType . LT.unpack
     let boundary = findValue "boundary" (ctParameters contentType)
     boundary <- justOrFail boundary "missing boundary"
     return $ ST.pack boundary
@@ -97,8 +96,7 @@ parseContentTypeAndWrite
     -> IO Result
 parseContentTypeAndWrite homePath headers byteString name filename = do
     contentType <- checkContentType headers
-    (result, path)
-        <- Upload.writeFile homePath byteString filename Nothing
+    (result, path) <- Upload.writeFile homePath byteString filename Nothing
     return Result { name        = fmap ST.pack name
                   , filename    = fmap ST.pack filename
                   , contentType = Just $ ST.pack contentType
@@ -123,15 +121,15 @@ writeFile :: ST.Text
 writeFile homePath byteString Nothing Nothing = do
     uuid <- nextRandom
     Upload.writeFile homePath
-                          byteString
-                          (Just $ Data.UUID.toString uuid)
-                          Nothing
+                     byteString
+                     (Just $ Data.UUID.toString uuid)
+                     Nothing
 writeFile homePath byteString Nothing (Just extension) = do
     uuid <- nextRandom
     Upload.writeFile homePath
-                          byteString
-                          (Just $ Data.UUID.toString uuid ++ extension)
-                          Nothing
+                     byteString
+                     (Just $ Data.UUID.toString uuid ++ extension)
+                     Nothing
 writeFile homePath byteString (Just suggestedFilename) _ = do
     let path = "/to-import/" ++ suggestedFilename
     let filePath = ST.unpack homePath ++ path
@@ -145,10 +143,9 @@ writeFile homePath byteString (Just suggestedFilename) _ = do
             if isHashEqual
                 then return ("skipped because exists", ST.pack path)
                 else Upload.writeFile homePath
-                                           byteString
-                                           Nothing
-                                           (Just $
-                                            takeExtension suggestedFilename)
+                                      byteString
+                                      Nothing
+                                      (Just $ takeExtension suggestedFilename)
 
 isHashEqual :: LB.ByteString -> FilePath -> IO Bool
 isHashEqual byteString filePath = do

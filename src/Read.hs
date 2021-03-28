@@ -51,12 +51,12 @@ backSlash = replace "\"" "\\\""
 mediaQueryToQuery :: MediaQuery -> Query ()
 mediaQueryToQuery mediaQuery
     | (not . L.null) t =
-        Query ("@media/tags/[** in [" ++ tagsFilterQuery t ++ "]]"
-               ++ trashFilterIfNeeds True t ++ " | limit :limit skip :offset "
-               ++ sortQuery) $ do
+        Query ("@" ++ mediaCollection ++ "/tags/[** in [" ++ tagsFilterQuery t
+               ++ "]]" ++ trashFilterIfNeeds True t
+               ++ " | limit :limit skip :offset " ++ sortQuery) $ do
             setI64 (fromIntegral $ limit mediaQuery) "limit"
             setI64 (fromIntegral $ offset mediaQuery) "offset"
-    | otherwise = Query ("@media" ++ trashFilterIfNeeds False t
+    | otherwise = Query ("@" ++ mediaCollection ++ trashFilterIfNeeds False t
                          ++ " | limit :limit skip :offset " ++ sortQuery) $ do
         setI64 (fromIntegral $ limit mediaQuery) "limit"
         setI64 (fromIntegral $ offset mediaQuery) "offset"
@@ -85,8 +85,7 @@ defaultMediaQuery :: MediaQuery
 defaultMediaQuery = MediaQuery { tags = [], offset = 0, limit = 500 }
 
 getMedia :: Repository -> MediaQuery -> IO [M.Media]
-getMedia (Repository _ database) mediaQuery =
-    getCount database (mediaQueryToQuery mediaQuery) >>= print >> catMaybes
+getMedia (Repository _ database) mediaQuery = catMaybes
     <$> getList' database (mediaQueryToQuery mediaQuery)
 
 setId :: (Int64, Maybe M.Media) -> Maybe M.Media

@@ -90,6 +90,7 @@ instance FromJBL GPS
 
 data Media = Media { id         :: Maybe Int64
                    , filePath   :: Maybe String
+                   , fileHash   :: Maybe Int
                    , importDate :: Maybe String
                    , date       :: Maybe String
                    , tags       :: Maybe (Set.HashSet String)
@@ -113,6 +114,7 @@ instance FromJBL Media
 emptyMedia :: Media
 emptyMedia = Media { Media.id   = Nothing
                    , filePath   = Nothing
+                   , fileHash   = Nothing
                    , importDate = Nothing
                    , date       = Nothing
                    , tags       = Nothing

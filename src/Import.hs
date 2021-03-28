@@ -66,38 +66,49 @@ importSingleFile (Repository homePath database) filePath = do
     if not exists
         then return ("file to import doesn't exists", Nothing)
         else do
-            media
-                <- catch (fromFile filePath)
-                         ((\e -> print e
-                           >> return (emptyMedia { Media.filePath =
-                                                       Just filePath
-                                                 })) :: IOException -> IO Media)
+            fileHash <- File.hash filePath
+            media <- catch (fromFile filePath)
+                           ((\e -> do
+                                 print e
+                                 return (emptyMedia { Media.filePath =
+                                                          Just filePath
+                                                    , Media.fileHash =
+                                                          Just fileHash
+                                                    }))
+                                :: IOException -> IO Media)
             let filename = takeFileName filePath
-            let suggestedMediaFilePath =
-                    unpack homePath </> F.media </> filename
-            mediaFilePath
-                <- chooseFileName suggestedMediaFilePath (File.hash filePath)
-            case mediaFilePath of
-                Nothing -> return ("already imported", Just media)
-                Just mediaFilePath -> do
+            alreadyImported <- (0 /=)
+                <$> getCount database
+                             (Query ("@" ++ mediaCollection
+                                     ++ "/[fileHash = :?]") $
+                              setI64AtIndex (fromIntegral fileHash) 0)
+            if alreadyImported
+                then return ("already imported", Just media)
+                else do
+                    let suggestedMediaFilePath =
+                            unpack homePath </> F.media </> filename
+                    mediaFilePath <- chooseFileName suggestedMediaFilePath
+                    let mediaFileName = takeFileName mediaFilePath
                     now <- Time.currentUTCDateTimeString
                     thumbnails <- createMediaThumbnails homePath filePath
-                    let media' =
-                            media { filePath   = Just $ F.media </> filename
-                                  , importDate = Just now
-                                  , date       =
-                                        Just (fromMaybe now (date media))
-                                  , thumbnails = Just thumbnails
-                                  }
+                    let media' = media { filePath   =
+                                             Just $ F.media </> mediaFileName
+                                       , importDate = Just now
+                                       , date       =
+                                             Just (fromMaybe now (date media))
+                                       , thumbnails = Just thumbnails
+                                       }
                     id <- putNew database mediaCollection media'
+                    let media'' = media' { id = Just $ fromIntegral id }
                     renameFile filePath mediaFilePath
-                    return ( "ok"
-                           , Just $ media' { id = Just $ fromIntegral id }
-                           )
+                    return ("ok", Just media'')
 
 fromFile :: String -> IO Media
 fromFile filePath = do
     metadata <- metadataFromFile filePath
-    return $ (minimalMedia 0 filePath) { metadata = Just metadata
-                                       , date     = utcDateFromMetadata metadata
-                                       }
+    fileHash <- File.hash filePath
+    return $ emptyMedia { Media.filePath = Just filePath
+                        , fileHash       = Just fileHash
+                        , metadata       = Just metadata
+                        , date           = utcDateFromMetadata metadata
+                        }

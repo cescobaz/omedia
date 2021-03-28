@@ -39,8 +39,9 @@ import           Web.Scotty
 postApiMediaThumbnails :: Repository -> ScottyM ()
 postApiMediaThumbnails (Repository homePath database) =
     post "/api/media/:id/thumbnails"
-         (fromIntegral . read <$> param "id" >>= liftIO
-          . updateMediaM database (updateMediaThumbnails homePath) >>= json)
+         (param "id" >>= liftIO
+          . updateMediaM database (updateMediaThumbnails homePath)
+          . fromIntegral . read >>= json)
 
 updateMediaThumbnails :: T.Text -> Media.Media -> IO Media.Media
 updateMediaThumbnails homePath media =
@@ -82,7 +83,7 @@ createThumbnail :: String -> (Int, Int) -> String -> IO Thumbnail
 createThumbnail directory maxSize filePath = readImage filePath
     >>= either fail (return . scaleDynamicImage maxSize)
     >>= \(image, (width, height)) ->
-    chooseNotExistingFileName directory (takeExtension filePath)
+    createNotExistingFileName directory (takeExtension filePath)
     >>= \destFilePath -> saveJpgImage 100 destFilePath image
     >> return Thumbnail { filePath = takeFileName destFilePath
                         , width    = width

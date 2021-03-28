@@ -10,29 +10,23 @@ import           Data.UUID.V4
 import           System.Directory
 import           System.FilePath
 
-chooseFileName :: FilePath -> IO Int -> IO (Maybe FilePath)
-chooseFileName filePath hashIO = do
+chooseFileName :: FilePath -> IO FilePath
+chooseFileName filePath = do
     exists <- doesFileExist filePath
     if not exists
-        then return $ Just filePath
+        then return filePath
         else do
-            iHash <- hashIO
-            fileHash <- hash filePath
-            if fileHash == iHash
-                then return Nothing
-                else do
-                    let directory = takeDirectory filePath
-                    let extension = takeExtension filePath
-                    randomFilePath <- randomFileName directory extension
-                    chooseFileName randomFilePath hashIO
+            let directory = takeDirectory filePath
+            let extension = takeExtension filePath
+            createNotExistingFileName directory extension
 
-chooseNotExistingFileName :: FilePath -> String -> IO FilePath
-chooseNotExistingFileName directory extension = do
+createNotExistingFileName :: FilePath -> String -> IO FilePath
+createNotExistingFileName directory extension = do
     filePath <- randomFileName directory extension
     exists <- doesFileExist filePath
     if not exists
         then return filePath
-        else chooseNotExistingFileName directory extension
+        else createNotExistingFileName directory extension
 
 randomFileName :: FilePath -> String -> IO FilePath
 randomFileName directory extension = do
