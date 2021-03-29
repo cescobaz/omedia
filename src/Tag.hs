@@ -6,12 +6,10 @@ module Tag
     , postApiMediaTags
     , postApiMediaBulkTags
     , deleteApiMediaTagsBulk
-    , getApiMediaTags
     , addTagsBulk
     , addTags
     , addTagsToMedia
     , removeTagFromMedia
-    , getTags
     ) where
 
 import           Control.Monad.IO.Class
@@ -86,18 +84,3 @@ removeTagsFromMedia tags media = media { Media.tags = tags' }
 
 removeTagFromMedia :: String -> Media -> Media
 removeTagFromMedia tag = removeTagsFromMedia [ tag ]
-
-getApiMediaTags :: Repository -> ScottyM ()
-getApiMediaTags (Repository _ database) = get "/api/media/tags/" $
-    liftIO (getTags database) >>= json
-
-getTags :: DB.Database -> IO [Tag]
-getTags database = fmap Tag . List.sort . Set.toList
-    <$> DB.fold database foldTags Set.empty (DB.Query query DB.noBind)
-  where
-    query = "@" ++ mediaCollection ++ "/*"
-
-foldTags :: Set.HashSet String -> (Int64, Maybe Media) -> Set.HashSet String
-foldTags set (_, Nothing) = set
-foldTags set (_, Just media) = maybe set (Set.union set) (Media.tags media)
-

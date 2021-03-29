@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ReadToImport ( getToImport ) where
+module ReadToImport ( getToImport, media, ReadToImport.files ) where
 
 import           Control.Monad.IO.Class
 
@@ -17,15 +17,16 @@ import           System.FilePath
 import           Web.Scotty
 
 getToImport :: Repository -> ScottyM ()
-getToImport (Repository homePath _) = get "/api/to-import/" $ do
-    files <- liftIO $ ReadToImport.files (ST.unpack homePath ++ "/to-import")
-    json files
+getToImport repository =
+    get "/api/to-import/" (liftIO (ReadToImport.media repository) >>= json)
 
-files :: FilePath -> IO [Media]
-files path = do
-    entries <- listDirectory path
-    return $ Data.List.map ReadToImport.map $
-        Data.List.filter (Media.isSuffixAllowed . takeExtension) entries
+media :: Repository -> IO [Media]
+media repository = fmap ReadToImport.map <$> ReadToImport.files repository
+
+files :: Repository -> IO [FilePath]
+files (Repository homePath _) = Data.List.map ("to-import/" </>)
+    . Data.List.filter (Media.isSuffixAllowed . takeExtension)
+    <$> listDirectory (ST.unpack homePath ++ "/to-import")
 
 map :: FilePath -> Media
-map filePath = minimalMedia 0 ("to-import/" </> filePath)
+map = minimalMedia 0

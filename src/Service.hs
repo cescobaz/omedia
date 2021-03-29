@@ -2,6 +2,10 @@
 
 module Service where
 
+import qualified Autoimport
+
+import           Control.Concurrent                   ( forkIO )
+
 import           Data.Text
 
 import qualified Database.EJDB2                       as Database
@@ -21,6 +25,8 @@ import           Network.Wai.Middleware.Static
 import           Normalize
 
 import           Read
+
+import           ReadTag
 
 import           ReadToImport
 
@@ -42,6 +48,7 @@ run options@(Service.Options port homePath) = do
                          mediaCollection
                          "/date /importDate"
                          [ Database.strIndexMode ]
+    forkIO (Autoimport.autoimport repository)
     scotty port $ do
         middleware logStdoutDev
         middleware $ staticPolicy $ resourcesPolicy homePath

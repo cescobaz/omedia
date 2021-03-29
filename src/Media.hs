@@ -12,6 +12,7 @@ module Media
     ) where
 
 import           Data.Aeson     ( FromJSON, ToJSON )
+import           Data.Char      ( toLower )
 import           Data.HashSet   as Set ( HashSet )
 import           Data.Int
 
@@ -134,8 +135,11 @@ isContentTypeAllowed :: String -> Bool
 isContentTypeAllowed t = t `elem` allowedContentType
 
 isSuffixAllowed :: String -> Bool
-isSuffixAllowed ".jpeg" = True
-isSuffixAllowed ".jpg" = True
-isSuffixAllowed ".png" = True
-isSuffixAllowed _ = False
+isSuffixAllowed = isSuffixAllowed' . map toLower
+
+isSuffixAllowed' :: String -> Bool
+isSuffixAllowed' ".jpeg" = True
+isSuffixAllowed' ".jpg" = True
+isSuffixAllowed' ".png" = True
+isSuffixAllowed' _ = False
 
