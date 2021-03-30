@@ -36,8 +36,8 @@ type RawExifMetadata = Map.Map E.ExifTag E.ExifValue
 
 postApiMediaMetadata :: Repository -> ScottyM ()
 postApiMediaMetadata (Repository homePath database) =
-    post "/api/media/:id/metadata" $ (read <$> param "id") >>= liftIO
-    . updateMediaM database (updateMediaMetadata homePath) >>= json
+    post "/api/media/:id/metadata" $ param "id" >>= liftIO
+    . updateMediaM database (updateMediaMetadata homePath) . read >>= json
 
 updateMediaMetadata :: Text -> Media -> IO Media
 updateMediaMetadata homePath media =
