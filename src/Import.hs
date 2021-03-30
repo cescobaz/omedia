@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Import ( postApiMedia, fromFile ) where
+module Import ( postApiMedia, fromFile, importMedia ) where
 
 import           Control.Exception
 import           Control.Monad.IO.Class
@@ -98,9 +98,13 @@ importSingleFile (Repository homePath database) filePath = do
                                              Just (fromMaybe now (date media))
                                        , thumbnails = Just thumbnails
                                        }
+                    putStrLn $ "Import putNew " ++ show filePath
                     id <- putNew database mediaCollection media'
+                    putStrLn "Import putNew finished"
                     let media'' = media' { id = Just $ fromIntegral id }
+                    putStrLn $ "Import renameFile " ++ show filePath
                     renameFile filePath mediaFilePath
+                    putStrLn $ "Import renameFile done " ++ show mediaFilePath
                     return ("ok", Just media'')
 
 fromFile :: String -> IO Media
