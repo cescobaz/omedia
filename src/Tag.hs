@@ -15,6 +15,7 @@ module Tag
 import           Control.Monad.IO.Class
 
 import           Data.Aeson             ( FromJSON, ToJSON )
+import           Data.Char              ( toLower )
 import qualified Data.HashSet           as Set
 import           Data.Hashable
 import           Data.Int
@@ -57,7 +58,8 @@ addTagsBulk :: DB.Database -> [String] -> [Int64] -> IO [Media]
 addTagsBulk database tags = mapM (addTags database tags)
 
 addTags :: DB.Database -> [String] -> Int64 -> IO Media
-addTags database tags = updateMedia database (addTagsToMedia tags)
+addTags database tags =
+    updateMedia database (addTagsToMedia (toLowerTags tags))
 
 addTagsToMedia :: [String] -> Media -> Media
 addTagsToMedia tags media = media { Media.tags = Just tags' }
@@ -84,3 +86,6 @@ removeTagsFromMedia tags media = media { Media.tags = tags' }
 
 removeTagFromMedia :: String -> Media -> Media
 removeTagFromMedia tag = removeTagsFromMedia [ tag ]
+
+toLowerTags :: [String] -> [String]
+toLowerTags = map (map toLower)
