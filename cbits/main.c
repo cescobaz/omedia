@@ -1,28 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "oimage.h"
+#include "oexif.h"
 
 int main(int argc, char **argv) {
   init();
+  printf("arc %d\n", argc);
   char *filename, *ofilename;
-  if (argc > 0) {
+  if (argc > 1) {
     filename = argv[1];
   } else {
-    filename = "/Users/cescobaz/omedia/to-import/"
+    filename = "/Users/cescobaz/omedia/to-import/wait/"
                "E399459F-476E-4CAB-95E6-60BC20E26D12.heic";
   }
-  if (argc > 1) {
+  if (argc > 2) {
     ofilename = argv[2];
   } else {
     ofilename = "prova.jpg";
   }
   printf("filename %s\n", filename);
-  int result = exif(filename, NULL);
-  printf("exif %d\n", result);
-  result = thumbnail(filename, ofilename, 256, NULL, NULL);
-  if (result != 0) {
-    printf("error %d\n", result);
-    exit(result);
-  }
-  return 0;
+  printf("ofilename %s\n", ofilename);
+  Metadata metadata;
+  int result = exif(filename, &metadata);
+  printf("exif %d %s \n%s\n", result, metadata.model, metadata.gpsLatitude);
+  return thumbnail(filename, ofilename, 256, NULL, NULL);
 }

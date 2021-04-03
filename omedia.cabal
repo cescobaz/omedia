@@ -68,7 +68,9 @@ library
   default-language:    Haskell2010
   pkgconfig-depends:   vips
   c-sources:           cbits/oimage.c
+                       cbits/oexif.c
   install-includes:    oimage.h
+                       oexif.h
   include-dirs:        cbits
 
 executable omedia-exe
