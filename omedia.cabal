@@ -68,7 +68,6 @@ library
       , JuicyPixels ^>=3.3.5
       , JuicyPixels-extra ^>=0.4.1
   default-language:    Haskell2010
-  extra-libraries:     pthread
   pkgconfig-depends:   vips
   c-sources:           cbits/oimage.c
   install-includes:    oimage.h
@@ -77,6 +76,7 @@ library
 executable omedia-exe
   ghc-options:         -Wall -threaded
   -- there is a link error because of MacPorts libiconv library, we need to force to use Xcode libiconv
+  -- https://stackoverflow.com/questions/57734434/libiconv-or-iconv-undefined-symbol-on-mac-osx
   extra-lib-dirs:      /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib
   main-is:             app/Main.hs
   -- other-modules:
