@@ -1,51 +1,73 @@
 #include <vips/vips.h>
 #include "oexif.h"
 
-int exif(char *filename, Metadata *metadata) {
-  VipsImage *image = vips_image_new_from_file(filename, NULL);
+#define COUNT 19
 
-  vips_image_get_as_string(image, "exif-ifd2-DateTimeOriginal",
-                           &(metadata->dateTimeOriginal));
-  vips_image_get_as_string(image, "exif-ifd2-SubSecTimeOriginal",
-                           &(metadata->subSecTimeOriginal));
-  vips_image_get_as_string(image, "exif-ifd2-OffsetTimeOriginal",
-                           &(metadata->offsetTimeOriginal));
-  vips_image_get_as_string(image, "exif-ifd2-ModifyDate",
-                           &(metadata->dateTime));
-  vips_image_get_as_string(image, "exif-ifd2-ModifyDate",
-                           &(metadata->dateTime));
-  vips_image_get_as_string(image, "exif-ifd2-SubSecTime",
-                           &(metadata->subSecTime));
-  vips_image_get_as_string(image, "exif-ifd2-OffsetTime",
-                           &(metadata->offsetTime));
-  vips_image_get_as_string(image, "exif-ifd2-DateTimeDigitized",
-                           &(metadata->dateTimeDigitized));
-  vips_image_get_as_string(image, "exif-ifd2-SubSecTimeDigitized",
-                           &(metadata->subSecTimeDigitized));
-  vips_image_get_as_string(image, "exif-ifd2-OffsetTimeDigitized",
-                           &(metadata->offsetTimeDigitized));
-  if (vips_image_get_typeof(image, "exif-ifd0-Orientation")) {
-    metadata->orientation = malloc(sizeof(int));
-    *(metadata->orientation) = vips_image_get_orientation(image);
+static const char *DateTimeOriginal = "exif-ifd2-DateTimeOriginal";
+static const char *SubSecTimeOriginal = "exif-ifd2-SubSecTimeOriginal";
+static const char *OffsetTimeOriginal = "exif-ifd2-OffsetTimeOriginal";
+static const char *ModifyDate = "exif-ifd2-ModifyDate";
+static const char *SubSecTime = "exif-ifd2-SubSecTime";
+static const char *OffsetTime = "exif-ifd2-OffsetTime";
+static const char *DateTimeDigitized = "exif-ifd2-DateTimeDigitized";
+static const char *SubSecTimeDigitized = "exif-ifd2-SubSecTimeDigitized";
+static const char *OffsetTimeDigitized = "exif-ifd2-OffsetTimeDigitized";
+static const char *Orientation = "exif-ifd0-Orientation";
+static const char *UniqueCameraModel = "exif-ifd0-UniqueCameraModel";
+static const char *LocalizedCameraModel = "exif-ifd0-LocalizedCameraModel";
+static const char *Model = "exif-ifd0-Model";
+static const char *GPSLatitude = "exif-ifd3-GPSLatitude";
+static const char *GPSLatitudeRef = "exif-ifd3-GPSLatitudeRef";
+static const char *GPSLongitude = "exif-ifd3-GPSLongitude";
+static const char *GPSLongitudeRef = "exif-ifd3-GPSLongitudeRef";
+static const char *GPSAltitude = "exif-ifd3-GPSAltitude";
+static const char *GPSAltitudeRef = "exif-ifd3-GPSAltitudeRef";
+
+int exif(char *filename, void ***out, int *count) {
+  void **metadata = calloc(COUNT * 2, sizeof(void *));
+  if (!metadata) {
+    return -1;
   }
-  vips_image_get_as_string(image, "exif-ifd0-UniqueCameraModel",
-                           &(metadata->uniqueCameraModel));
-  vips_image_get_as_string(image, "exif-ifd0-LocalizedCameraModel",
-                           &(metadata->localizedCameraModel));
-  vips_image_get_as_string(image, "exif-ifd0-Model", &(metadata->model));
+  VipsImage *image = vips_image_new_from_file(filename, NULL);
+  if (!image) {
+    free(metadata);
+    return -1;
+  }
+  *count = COUNT;
+  *out = metadata;
 
-  vips_image_get_as_string(image, "exif-ifd3-GPSAltitude",
-                           &(metadata->gpsAltitude));
-  vips_image_get_as_string(image, "exif-ifd3-GPSAltitudeRef",
-                           &(metadata->gpsAltitudeRef));
-  vips_image_get_as_string(image, "exif-ifd3-GPSLatitude",
-                           &(metadata->gpsLatitude));
-  vips_image_get_as_string(image, "exif-ifd3-GPSLatitudeRef",
-                           &(metadata->gpsLatitudeRef));
-  vips_image_get_as_string(image, "exif-ifd3-GPSLongitude",
-                           &(metadata->gpsLongitude));
-  vips_image_get_as_string(image, "exif-ifd3-GPSLongitudeRef",
-                           &(metadata->gpsLongitudeRef));
+  metadata[0] = (void *)DateTimeOriginal;
+  metadata[2] = (void *)SubSecTimeOriginal;
+  metadata[4] = (void *)OffsetTimeOriginal;
+  metadata[6] = (void *)ModifyDate;
+  metadata[8] = (void *)SubSecTime;
+  metadata[10] = (void *)OffsetTime;
+  metadata[12] = (void *)DateTimeDigitized;
+  metadata[14] = (void *)SubSecTimeDigitized;
+  metadata[16] = (void *)OffsetTimeDigitized;
+  metadata[18] = (void *)UniqueCameraModel;
+  metadata[20] = (void *)LocalizedCameraModel;
+  metadata[22] = (void *)Model;
+  metadata[24] = (void *)GPSAltitude;
+  metadata[26] = (void *)GPSAltitudeRef;
+  metadata[28] = (void *)GPSLatitude;
+  metadata[30] = (void *)GPSLatitudeRef;
+  metadata[32] = (void *)GPSLongitude;
+  metadata[34] = (void *)GPSLongitudeRef;
+  int max = COUNT * 2 - 2;
+  for (int i = 0; i < max; i += 2) {
+    const char *name = metadata[i];
+    char *value;
+    int result = vips_image_get_as_string(image, name, &value);
+    if (result == 0) {
+      metadata[i + 1] = value;
+    }
+  }
+  metadata[36] = (void *)Orientation;
+  if (vips_image_get_typeof(image, Orientation)) {
+    metadata[37] = malloc(sizeof(int));
+    *((int *)metadata[37]) = vips_image_get_orientation(image);
+  }
 
   g_object_unref(image);
   return 0;

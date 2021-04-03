@@ -20,8 +20,15 @@ int main(int argc, char **argv) {
   }
   printf("filename %s\n", filename);
   printf("ofilename %s\n", ofilename);
-  Metadata metadata;
-  int result = exif(filename, &metadata);
-  printf("exif %d %s \n%s\n", result, metadata.model, metadata.gpsLatitude);
+  void **metadata = NULL;
+  int count = 0;
+  int result = exif(filename, &metadata, &count);
+  int max = count * 2;
+  for (int i = 0; i < max; i += 2) {
+    char *value = metadata[i + 1];
+    printf("exif %s = %s\n", (char *)metadata[i], value);
+    free(value);
+  }
+  free(metadata);
   return thumbnail(filename, ofilename, 256, NULL, NULL);
 }
