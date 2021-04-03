@@ -3,7 +3,7 @@ organize your media
 
 ## Requirements
 
-* [libejdb2](https://github.com/Softmotions/ejdb#use-cases)
+* [libejdb2](https://github.com/Softmotions/ejdb)
 * [libvips](https://github.com/libvips/libvips)
 
 ## Build and Run
