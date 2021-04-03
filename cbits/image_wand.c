@@ -20,6 +20,7 @@ int thumbnail(char *inputFilename, char *outputFilename, int maxSize) {
     height = maxSize;
   }
   printf("%d %d", width, height);
+  // https://urmaul.com/blog/imagick-filters-comparison/
   MagickResizeImage(m_wand,width,height,BoxFilter);
   //MagickScaleImage(m_wand,width,height);
   MagickSetImageCompressionQuality(m_wand,90);
