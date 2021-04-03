@@ -9,6 +9,8 @@ import           Media
 
 import           Read
 
+import           ReadTag
+
 import           Repository       ( mediaCollection )
 
 import           Tag

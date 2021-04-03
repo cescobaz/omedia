@@ -14,7 +14,10 @@ maintainer:          francesco.burelli@gmail.com
 -- copyright:
 -- category:
 build-type:          Simple
-extra-source-files:  ChangeLog.md, README.md
+extra-source-files:  ChangeLog.md
+                     README.md
+                     cbits/oimage.h
+                     cbits/oimage.c
 
 library
   exposed-modules:
@@ -38,13 +41,14 @@ library
       Normalize
       Tag
       ReadTag
+      Image
   hs-source-dirs:
       src
   build-depends:
         base >=4.12
       , text ^>=1.2.4.0
       , regex-compat ^>=0.95.1
-      , ejdb2-binding ^>=0.3.0.1
+      , ejdb2-binding ^>=0.4.0.0
       , scotty ^>=0.11.5
       , aeson ^>=1.4.6.0
       , http-types ^>=0.12.3
@@ -64,9 +68,16 @@ library
       , JuicyPixels ^>=3.3.5
       , JuicyPixels-extra ^>=0.4.1
   default-language:    Haskell2010
+  extra-libraries:     pthread
+  pkgconfig-depends:   vips
+  c-sources:           cbits/oimage.c
+  install-includes:    oimage.h
+  include-dirs:        cbits
 
 executable omedia-exe
-  ghc-options:         -threaded
+  ghc-options:         -Wall -threaded
+  -- there is a link error because of MacPorts libiconv library, we need to force to use Xcode libiconv
+  extra-lib-dirs:      /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib
   main-is:             app/Main.hs
   -- other-modules:
   -- other-extensions:
@@ -91,7 +102,7 @@ test-suite omedia-tests
     , tasty-hunit ^>=0.10.0.2
     , text ^>=1.2.4.0
     , directory ^>=1.3.6.0
-    , ejdb2-binding ^>=0.3.0.1
+    , ejdb2-binding ^>=0.4.0.0
     , unordered-containers ^>=0.2.10.0
     , JuicyPixels ^>=3.3.5
     , omedia
