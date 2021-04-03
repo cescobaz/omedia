@@ -6,5 +6,8 @@ project(oimage)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(VIPS REQUIRED IMPORTED_TARGET vips)
 
-add_library(oimage image_vips.c)
+add_library(oimage oimage.c)
 target_link_libraries(oimage PkgConfig::VIPS)
+
+add_executable(oimage-cli main.c)
+target_link_libraries(oimage-cli oimage)

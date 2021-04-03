@@ -1,5 +1,8 @@
 #include <vips/vips.h>
 #include <vips/resample.h>
+#include "oimage.h"
+
+void init() { VIPS_INIT(""); }
 
 int thumbnail(char *inputFilename, char *outputFilename, int maxSize) {
   VipsImage *out = NULL;
@@ -15,29 +18,6 @@ int thumbnail(char *inputFilename, char *outputFilename, int maxSize) {
   g_object_unref(out);
   return 0;
 }
-
-// https://exiftool.org/TagNames/EXIF.html
-typedef struct Metadata {
-  char *dateTimeOriginal;
-  char *subSecTimeOriginal;
-  char *offsetTimeOriginal;
-  char *dateTime;
-  char *offsetTime;
-  char *subSecTime;
-  char *dateTimeDigitized;
-  char *subSecTimeDigitized;
-  char *offsetTimeDigitized;
-  int orientation;
-  char *uniqueCameraModel;
-  char *localizedCameraModel;
-  char *model;
-  double *gpsLatitude;
-  char *gpsLatitudeRef;
-  double *gpsLongitude;
-  char *gpsLongitudeRef;
-  double gpsAltitude;
-  char *gpsAltitudeRef;
-} Metadata;
 
 int exif_string(VipsImage *image, const char *name, char **out) {
   GValue value = {0};
@@ -65,15 +45,8 @@ int exif(char *filename, Metadata **out) {
   printf("%s = %s\n", name, metadata->dateTimeOriginal);
   name = "exif-ifd2-SubSecTimeOriginal";
   exif_string(image, name, (char **)&(metadata->subSecTimeOriginal));
+  printf("%s = %s\n", name, metadata->subSecTimeOriginal);
 
   g_object_unref(image);
   return 0;
-}
-int main(int argc, char **argv) {
-  VIPS_INIT("");
-  char *filename = "/Users/cescobaz/omedia/to-import/"
-                   "E399459F-476E-4CAB-95E6-60BC20E26D12.heic";
-  int result = exif(filename, NULL);
-  printf("exif %d\n", result);
-  return thumbnail(filename, "prova.jpg", 256);
 }
