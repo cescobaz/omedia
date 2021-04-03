@@ -1,17 +1,17 @@
 # omedia
 organize your media
 
-## Requirements
+## requirements
 
 * [libejdb2](https://github.com/Softmotions/ejdb)
 * [libvips](https://github.com/libvips/libvips)
 
-## Build and Run
+## build and run
 ```bash
-cabal v2-run
+cabal run omedia-exe
 ```
 
-## Files structure
+## files structure
 media/
 thumbnails/
 to-import/
