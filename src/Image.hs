@@ -1,20 +1,24 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Image where
+module Image ( scale ) where
 
 import           Foreign
 import           Foreign.C.String
 import           Foreign.C.Types
 
-foreign import ccall unsafe "oimage.h thumbnails" c_thumbnail
+foreign import ccall unsafe "oimage.h thumbnail" c_thumbnail
         :: CString -> CString -> CInt -> IO CInt
 
-scale :: String -> String -> Int -> IO Int
-scale ifile ofile maxSize = fromIntegral
-    <$> withCString ifile
-                    (\cifile ->
-                     withCString ofile
-                                 (\cofile -> c_thumbnail cifile
-                                                         cofile
-                                                         (fromIntegral maxSize)))
+checkRC :: String -> CInt -> IO ()
+checkRC _ 0 = return ()
+checkRC function resultCode =
+    fail ("Error: Module Image: " ++ function ++ " -> " ++ show resultCode)
+
+scale :: String -> String -> Int -> IO ()
+scale ifile ofile maxSize =
+    withCString ifile
+                (\cifile ->
+                 withCString ofile
+                             (\cofile ->
+                              c_thumbnail cifile cofile (fromIntegral maxSize)
+                              >>= checkRC "scale"))

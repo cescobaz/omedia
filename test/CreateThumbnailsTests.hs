@@ -1,6 +1,5 @@
 module CreateThumbnailsTests where
 
-import           Codec.Picture
 
 import           MediaThumbnails
 

@@ -8,10 +8,6 @@ module MediaThumbnails
     , createThumbnail
     ) where
 
-import           Codec.Picture
-import           Codec.Picture.Extra
-import           Codec.Picture.Types
-
 import           Control.Monad
 import           Control.Monad.IO.Class
 
@@ -21,6 +17,7 @@ import qualified Data.Text              as T
 import qualified Database.EJDB2         as DB
 
 import           File
+import Image
 
 import           Folders
 
@@ -80,24 +77,12 @@ createThumbnails directory sizes filePath =
     mapM (\size -> createThumbnail directory size filePath) sizes
 
 createThumbnail :: String -> (Int, Int) -> String -> IO Thumbnail
-createThumbnail directory maxSize filePath = readImage filePath
-    >>= either fail (return . scaleDynamicImage maxSize)
-    >>= \(image, (width, height)) ->
-    createNotExistingFileName directory (takeExtension filePath)
-    >>= \destFilePath -> saveJpgImage 100 destFilePath image
-    >> return Thumbnail { filePath = takeFileName destFilePath
+createThumbnail directory (width, height) filePath = createNotExistingFileName directory ".jpg" -- convert to supported format anyway (heic is not supported by browser)
+    >>= \destFilePath -> Image.scale filePath destFilePath (max width height) >>
+    return Thumbnail { filePath = takeFileName destFilePath
                         , width    = width
                         , height   = height
                         }
-
-scaleDynamicImage :: (Int, Int) -> DynamicImage -> (DynamicImage, (Int, Int))
-scaleDynamicImage maxSize dynamicImage =
-    (ImageRGB16 $ scaleBilinear width height image, size)
-  where
-    image = convertRGB16 dynamicImage
-
-    size@(width, height) =
-        scaleSize maxSize (imageWidth image, imageHeight image)
 
 scaleSize :: (Int, Int) -> (Int, Int) -> (Int, Int)
 scaleSize (maxWidth, maxHeight) (originalWidth, originalHeight)

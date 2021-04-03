@@ -141,5 +141,6 @@ isSuffixAllowed' :: String -> Bool
 isSuffixAllowed' ".jpeg" = True
 isSuffixAllowed' ".jpg" = True
 isSuffixAllowed' ".png" = True
+isSuffixAllowed' ".heic" = True
 isSuffixAllowed' _ = False
 
