@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   printf("filename %s\n", filename);
   int result = exif(filename, NULL);
   printf("exif %d\n", result);
-  result = thumbnail(filename, ofilename, 256);
+  result = thumbnail(filename, ofilename, 256, NULL, NULL);
   if (result != 0) {
     printf("error %d\n", result);
     exit(result);

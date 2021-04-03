@@ -17,9 +17,10 @@ import qualified Data.Text              as T
 import qualified Database.EJDB2         as DB
 
 import           File
-import Image
 
 import           Folders
+
+import           Image
 
 import qualified Media
 
@@ -77,12 +78,14 @@ createThumbnails directory sizes filePath =
     mapM (\size -> createThumbnail directory size filePath) sizes
 
 createThumbnail :: String -> (Int, Int) -> String -> IO Thumbnail
-createThumbnail directory (width, height) filePath = createNotExistingFileName directory ".jpg" -- convert to supported format anyway (heic is not supported by browser)
-    >>= \destFilePath -> Image.scale filePath destFilePath (max width height) >>
+createThumbnail directory (width, height) filePath =
+    createNotExistingFileName directory ".jpg" -- convert to supported format anyway (heic is not supported by browser)
+    >>= \destFilePath -> Image.scale filePath destFilePath (max width height)
+    >>= \(thumbnailWidth, thumbnailHeight) ->
     return Thumbnail { filePath = takeFileName destFilePath
-                        , width    = width
-                        , height   = height
-                        }
+                     , width    = thumbnailWidth
+                     , height   = thumbnailHeight
+                     }
 
 scaleSize :: (Int, Int) -> (Int, Int) -> (Int, Int)
 scaleSize (maxWidth, maxHeight) (originalWidth, originalHeight)

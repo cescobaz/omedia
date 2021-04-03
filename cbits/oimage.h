@@ -1,6 +1,7 @@
 void init();
 
-int thumbnail(char *inputFilename, char *outputFilename, int maxSize);
+int thumbnail(char *inputFilename, char *outputFilename, int maxSize,
+              int *width, int *height);
 
 // https://exiftool.org/TagNames/EXIF.html
 typedef struct Metadata {
