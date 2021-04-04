@@ -1,4 +1,5 @@
 #include <vips/vips.h>
+#include <libexif/exif-data.h>
 #include "oexif.h"
 
 #define COUNT 19
@@ -7,9 +8,9 @@
 static const char *DateTimeOriginal = "exif-ifd2-DateTimeOriginal";
 static const char *SubSecTimeOriginal = "exif-ifd2-SubSecTimeOriginal";
 static const char *OffsetTimeOriginal = "exif-ifd2-OffsetTimeOriginal";
-static const char *ModifyDate = "exif-ifd2-ModifyDate";
-static const char *SubSecTime = "exif-ifd2-SubSecTime";
-static const char *OffsetTime = "exif-ifd2-OffsetTime";
+static const char *ModifyDate = "exif-ifd0-DateTime";
+static const char *SubSecTime = "exif-ifd0-SubSecTime";
+static const char *OffsetTime = "exif-ifd0-OffsetTime";
 static const char *DateTimeDigitized = "exif-ifd2-DateTimeDigitized";
 static const char *SubSecTimeDigitized = "exif-ifd2-SubSecTimeDigitized";
 static const char *OffsetTimeDigitized = "exif-ifd2-OffsetTimeDigitized";

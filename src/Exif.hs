@@ -3,13 +3,17 @@
 module Exif where
 
 import           Control.Exception
+import           Control.Monad
 
 import qualified Data.Map.Strict   as Map
+import           Data.Ratio
 
 import           Foreign
 import           Foreign.C.String
 import           Foreign.C.Types
 import           Foreign.Storable
+
+import           HLib
 
 import           Text.Regex.TDFA
 
@@ -65,14 +69,56 @@ nextKeyValue ptr = plusPtr (plusPtr ptr step) step
   where
     step = sizeOf ptr
 
-parseString :: String -> String
-parseString value = raw
+parseValue :: String -> (String -> Maybe a) -> Map.Map String Value -> Maybe a
+parseValue key parse metadatas = join (Map.lookup key metadatas) >>= parse
+
+parseString :: String -> Maybe String
+parseString value
+    | match /= "" && t == "ASCII" && length raw + 1 == read components =
+        Just raw
+    | otherwise = Nothing
   where
-    (raw, t, components) =
-        value =~ "(.*) \\(.*, (\\w+), ([0-9]+) components, [0-9]+ bytes\\)"
-            :: (String, String, String)
+    (raw, match, _, t : components : _) =
+        value =~ " \\(.*, ([A-Za-z]+), ([0-9]+) components, [0-9]+ bytes\\)"
+            :: (String, String, String, [String])
 
-parseRationalArray :: String -> [Double]
-parseRationalArray value = undefined
+parseRationalList :: String -> Maybe [Rational]
+parseRationalList value
+    | match /= "" && t == "Rational" && length rationalsRaw == read components =
+        Just rationals
+    | otherwise = Nothing
+  where
+    rationalsRaw = getAllTextMatches (value =~ "[0-9]+/[0-9]+") :: [String]
 
+    rationals = map ((\(n, _ : d) -> read n % read d) . break ('/' ==))
+                    rationalsRaw
+
+    (match : t : components : _) =
+        getAllTextSubmatches (value =~ "([A-Za-z]+), ([0-9]+) components, [0-9]+ bytes\\)")
+            :: [String]
+
+parseRational :: String -> Maybe Rational
+parseRational = parseRationalList >=> headOrNothing
+
+parseDoubleList :: String -> Maybe [Double]
+parseDoubleList = parseRationalList >=> return . map fromRational
+
+parseDouble :: String -> Maybe Double
+parseDouble = parseRational >=> return . fromRational
+
+parseIntList :: String -> Maybe [Int]
+parseIntList value
+    | match /= "" && t == "Short" && length integersRaw == read components =
+        Just integers
+    | otherwise = Nothing
+  where
+    integers =
+        map read (getAllTextMatches (integersRaw =~ "[0-9]+") :: [String])
+
+    (integersRaw, match, _, t : components : _) =
+        (value =~ " \\(.*, ([A-Za-z]+), ([0-9]+) components, [0-9]+ bytes\\)")
+            :: (String, String, String, [String])
+
+parseInt :: String -> Maybe Int
+parseInt = parseIntList >=> headOrNothing
 

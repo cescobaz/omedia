@@ -10,7 +10,7 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 
 tests :: TestTree
-tests = testGroup "ReadExif" [ readExif ]
+tests = testGroup "ReadExif" [ readExif, parseStringTest, parseIntTest ]
 
 readExif :: TestTree
 readExif = testCase "readExif" $ do
@@ -27,7 +27,9 @@ readExif = testCase "readExif" $ do
                        , Just "085 (085, ASCII, 4 components, 4 bytes)"
                        )
                      , ("exif-ifd2-OffsetTimeOriginal", Nothing)
-                     , ("exif-ifd2-ModifyDate", Nothing)
+                     , ( "exif-ifd0-DateTime"
+                       , Just "2019:07:15 08:55:58 (2019:07:15 08:55:58, ASCII, 20 components, 20 bytes)"
+                       )
                      , ("exif-ifd2-SubSecTime", Nothing)
                      , ("exif-ifd2-OffsetTime", Nothing)
                      , ( "exif-ifd2-DateTimeDigitized"
@@ -50,3 +52,18 @@ readExif = testCase "readExif" $ do
                        , Just "1 (Top-left, Short, 1 components, 2 bytes)"
                        )
                      ]
+
+parseStringTest :: TestTree
+parseStringTest =
+    testCase "parseStringTest" (expected @=? Exif.parseString value)
+  where
+    expected = Just "iPhone SE"
+
+    value = "iPhone SE (iPhone SE, ASCII, 10 components, 10 bytes)"
+
+parseIntTest :: TestTree
+parseIntTest = testCase "parseIntTest" (expected @=? Exif.parseInt value)
+  where
+    expected = Just 1
+
+    value = "1 (Top-left, Short, 1 components, 2 bytes)"
