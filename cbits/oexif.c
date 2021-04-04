@@ -3,6 +3,7 @@
 
 #define COUNT 19
 
+// https://exiftool.org/TagNames/EXIF.html
 static const char *DateTimeOriginal = "exif-ifd2-DateTimeOriginal";
 static const char *SubSecTimeOriginal = "exif-ifd2-SubSecTimeOriginal";
 static const char *OffsetTimeOriginal = "exif-ifd2-OffsetTimeOriginal";
@@ -54,7 +55,8 @@ int exif(char *filename, void ***out, int *count) {
   metadata[30] = (void *)GPSLatitudeRef;
   metadata[32] = (void *)GPSLongitude;
   metadata[34] = (void *)GPSLongitudeRef;
-  int max = COUNT * 2 - 2;
+  metadata[36] = (void *)Orientation;
+  int max = COUNT * 2;
   for (int i = 0; i < max; i += 2) {
     const char *name = metadata[i];
     char *value;
@@ -63,12 +65,16 @@ int exif(char *filename, void ***out, int *count) {
       metadata[i + 1] = value;
     }
   }
-  metadata[36] = (void *)Orientation;
-  if (vips_image_get_typeof(image, Orientation)) {
-    metadata[37] = malloc(sizeof(int));
-    *((int *)metadata[37]) = vips_image_get_orientation(image);
-  }
 
   g_object_unref(image);
   return 0;
+}
+void free_exif(void **headers, int count) {
+  int max = count * 2;
+  for (int i = 1; i < max; i += 2) {
+    void *ptr = headers[i];
+    if (ptr) {
+      free(ptr);
+    }
+  }
 }

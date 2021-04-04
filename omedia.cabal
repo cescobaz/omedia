@@ -42,6 +42,7 @@ library
       Tag
       ReadTag
       Image
+      Exif
   hs-source-dirs:
       src
   build-depends:

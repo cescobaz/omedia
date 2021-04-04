@@ -27,8 +27,7 @@ int main(int argc, char **argv) {
   for (int i = 0; i < max; i += 2) {
     char *value = metadata[i + 1];
     printf("exif %s = %s\n", (char *)metadata[i], value);
-    free(value);
   }
-  free(metadata);
+  free_exif(metadata, count);
   return thumbnail(filename, ofilename, 256, NULL, NULL);
 }
