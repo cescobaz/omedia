@@ -11,6 +11,8 @@ import           Foreign.C.String
 import           Foreign.C.Types
 import           Foreign.Storable
 
+import           Text.Regex.TDFA
+
 foreign import ccall unsafe "oexif.h exif" c_exif
         :: CString -> Ptr (Ptr (Ptr ())) -> Ptr CInt -> IO CInt
 
@@ -48,16 +50,29 @@ parse ptr count = do
 parseKeyValue :: Ptr (Ptr ()) -> IO (String, Value)
 parseKeyValue ptr = do
     key <- peek ptr >>= peekCString . castPtr
-    value <- peek (plusPtr ptr step) >>= \valuePtr ->
-        if valuePtr == nullPtr
-        then return Nothing
-        else Just <$> peekCString (castPtr valuePtr)
-    return (key, value)
+    valuePtr <- peek nextPtr
+    if valuePtr == nullPtr
+        then return (key, Nothing)
+        else peekCString (castPtr valuePtr)
+            >>= \value -> return (key, Just value)
   where
     step = sizeOf ptr
+
+    nextPtr = plusPtr ptr step
 
 nextKeyValue :: Ptr (Ptr ()) -> Ptr (Ptr ())
 nextKeyValue ptr = plusPtr (plusPtr ptr step) step
   where
     step = sizeOf ptr
+
+parseString :: String -> String
+parseString value = raw
+  where
+    (raw, t, components) =
+        value =~ "(.*) \\(.*, (\\w+), ([0-9]+) components, [0-9]+ bytes\\)"
+            :: (String, String, String)
+
+parseRationalArray :: String -> [Double]
+parseRationalArray value = undefined
+
 

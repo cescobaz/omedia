@@ -66,6 +66,7 @@ library
       , containers ^>=0.6.0.1
       , unordered-containers ^>=0.2.10.0
       , time ^>=1.9.3
+      , regex-tdfa ^>= 1.3.1
   default-language:    Haskell2010
   pkgconfig-depends:   vips
   c-sources:           cbits/oimage.c
@@ -96,6 +97,7 @@ test-suite omedia-tests
       CreateThumbnailsTests 
       TagTests
       TagIntegrationTests
+      ReadExif
   type:                exitcode-stdio-1.0
   build-depends: 
       base >=4.12
@@ -106,6 +108,7 @@ test-suite omedia-tests
     , ejdb2-binding ^>=0.4.0.0
     , unordered-containers ^>=0.2.10.0
     , JuicyPixels ^>=3.3.5
+    , containers ^>=0.6.0.1
     , omedia
   default-language:    Haskell2010
   -- there is a link error because of MacPorts libiconv library, we need to force to use Xcode libiconv

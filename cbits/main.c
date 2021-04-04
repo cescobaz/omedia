@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
     char *value = metadata[i + 1];
     printf("exif %s = %s\n", (char *)metadata[i], value);
   }
-  free_exif(metadata, count);
+  free_exif(&metadata, count);
+  printf("sizeof(void*) = %lu\n", sizeof(void **));
   return thumbnail(filename, ofilename, 256, NULL, NULL);
 }

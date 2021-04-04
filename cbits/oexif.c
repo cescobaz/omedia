@@ -69,12 +69,15 @@ int exif(char *filename, void ***out, int *count) {
   g_object_unref(image);
   return 0;
 }
-void free_exif(void **headers, int count) {
+void free_exif(void ***out, int count) {
+  void **headers = *out;
   int max = count * 2;
   for (int i = 1; i < max; i += 2) {
     void *ptr = headers[i];
     if (ptr) {
-      free(ptr);
+      g_free(ptr);
     }
   }
+  free(*out);
+  *out = NULL;
 }

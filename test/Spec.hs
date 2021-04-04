@@ -4,6 +4,8 @@ import           CreateMediaFromFile
 
 import           CreateThumbnailsTests
 
+import           ReadExif
+
 import           ReadTests
 
 import           TagIntegrationTests
@@ -18,7 +20,8 @@ main = defaultMain Main.tests
 
 tests :: TestTree
 tests = testGroup "Tests"
-                  [ ReadTests.tests
+                  [ ReadExif.tests
+                  , ReadTests.tests
                   , CreateMediaFromFile.tests
                   , CreateThumbnailsTests.tests
                   , TagTests.tests
