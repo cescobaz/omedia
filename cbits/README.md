@@ -1,6 +1,7 @@
 ## Requirements
 
-[libvips](https://github.com/libvips/libvips)
+* [libvips](https://github.com/libvips/libvips)
+* [libexif](https://github.com/libexif/exif/)
 
 ## Build
 
