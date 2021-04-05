@@ -8,8 +8,8 @@ uint16_t reverse16(uint16_t value) {
 }
 
 uint32_t reverse32(uint32_t value) {
-  return (((value & 0x000000FF) << 24) | ((value & 0x0000FF00) << 8) |
-          ((value & 0x00FF0000) >> 8) | ((value & 0xFF000000) >> 24));
+  return ((value >> 24) & 0x000000FF) | ((value >> 8) & 0x0000FF00) |
+         ((value << 8) & 0x00FF0000) | ((value << 24) & 0xFF000000);
 }
 uint64_t reverse64(uint64_t value) {
   return (((value & 0x00000000000000FF) << 56) |
@@ -31,7 +31,6 @@ void stringEntry(ExifContent *content, uint tag, char **out) {
   }
   *out = calloc(1, entry->size + 1);
   memcpy(*out, entry->data, entry->size);
-  printf("ENTRY %s\n", *out);
 }
 void anyEntry(ExifContent *content, uint tag, void **out, size_t size,
               int count, char byteOrder) {
@@ -42,35 +41,38 @@ void anyEntry(ExifContent *content, uint tag, void **out, size_t size,
   if (entry == NULL) {
     return;
   }
-  exif_entry_dump(entry, 1);
   *out = calloc(count, size);
   size_t copySize = MIN(entry->size, count * size);
   memcpy(*out, entry->data, copySize);
-  printf("0x%04x: buffer size %lu, count %d, elemnt size %lu\n", tag, copySize,
-         count, size);
-  uint8_t *ptr = *out;
   if (byteOrder == 'l' || size == 1) {
-    printf("0x%04x[0] = %u (not reversed)\n", tag, *ptr);
     return;
   }
+  uint8_t *ptr8 = *out;
+  uint16_t *ptr16;
+  uint32_t *ptr32;
+  uint64_t *ptr64;
   for (int i = 0; i < count; ++i) {
     switch (size) {
     case 2:
-      *ptr = reverse16(*(uint16_t *)ptr);
-      printf("0x%04x[%d] = %u (reverse16)\n", tag, i, (uint16_t)*ptr);
+      ptr16 = (uint16_t *)ptr8;
+      *ptr16 = reverse16(*ptr16);
+      // printf("0x%04x[%d] = %u (reverse16)\n", tag, i, *ptr16);
       break;
     case 4:
-      *ptr = reverse32(*(uint32_t *)ptr);
-      printf("0x%04x[%d] = %d\n", tag, i, *(uint32_t *)ptr);
+      ptr32 = (uint32_t *)ptr8;
+      *ptr32 = reverse32(*ptr32);
+      // printf("0x%04x[%d] = %u (0x%08x)(reverse32)\n", tag, i, *ptr32,
+      // *(uint32_t *)ptr32);
       break;
     case 8:
-      *ptr = reverse64(*(uint64_t *)ptr);
-      printf("0x%04x[%d] = %f\n", tag, i, *(double *)ptr);
+      ptr64 = (uint64_t *)ptr8;
+      *ptr64 = reverse64(*ptr64);
+      // printf("0x%04x[%d] = %llu\n", tag, i, *ptr64);
       break;
     default:
       break;
     }
-    ptr += size;
+    ptr8 += size;
   }
 }
 // rational is 2 long: numerator and denominator
@@ -89,7 +91,7 @@ void rationalEntryToDouble(ExifContent *content, uint tag, double **out,
     uint32_t d = *ptr;
     ptr += 1;
     (*out)[i] = (double)n / (double)d;
-    printf("%u / %u = %f \n", n, d, (*out)[i]);
+    // printf("%u / %u = %f \n", n, d, (*out)[i]);
   }
   free(buffer);
 }
@@ -98,7 +100,6 @@ void content(ExifContent *content, Metadata *data) {
   if (ifd == EXIF_IFD_COUNT) {
     return;
   }
-  printf("CONTENT %d\n", ifd);
   ExifEntry *entry;
   char *buffer;
   // https://exiftool.org/TagNames/EXIF.html
@@ -175,7 +176,6 @@ int exif(char *filename, Metadata **out) {
   } else {
     metadata->byteOrder = 'l';
   }
-  printf("byte order: %c\n", metadata->byteOrder);
   exif_data_foreach_content(exifData, (ExifDataForeachContentFunc)&content,
                             metadata);
 
