@@ -10,11 +10,9 @@ module MediaMetadata
 import           Control.Applicative
 import           Control.Monad.IO.Class
 
-import qualified Data.Map.Strict        as Map
 import           Data.Text
 import qualified Data.Time.Clock        as Clock
 import qualified Data.Time.Format       as TimeFormat
-import           Data.Word
 
 import qualified Exif
 
@@ -41,8 +39,7 @@ updateMediaMetadata :: Text -> Media -> IO Media
 updateMediaMetadata homePath media =
     maybe (fail "no filePath for media")
           (\mediaFilePath ->
-           Exif.exif (unpack homePath </> mediaFilePath) >>= \rawMetadata -> do
-               let metadata = createMetadata rawMetadata
+           Exif.exif (unpack homePath </> mediaFilePath) >>= \metadata -> do
                return media { metadata = Just metadata
                             , date     = utcDateFromMetadata metadata
                             , gps      = Nothing
@@ -50,77 +47,7 @@ updateMediaMetadata homePath media =
           (Media.filePath media)
 
 metadataFromFile :: FilePath -> IO Metadata
-metadataFromFile filePath = createMetadata <$> Exif.exif filePath
-
-createMetadata :: Map.Map String Exif.Value -> Metadata
-createMetadata headers =
-    emptyMetadata { gpsAltitude = Exif.parseValue "exif-ifd3-GPSAltitude"
-                                                  Exif.parseDouble
-                                                  headers
-                  , gpsAltitudeRef = Exif.parseValue "exif-ifd3-GPSAltitudeRef"
-                                                     Exif.parseString
-                                                     headers
-                  , gpsLatitude = Exif.parseValue "exif-ifd3-GPSLatitude"
-                                                  Exif.parseDoubleList
-                                                  headers
-                  , gpsLatitudeRef = Exif.parseValue "exif-ifd3-GPSLatitudeRef"
-                                                     Exif.parseString
-                                                     headers
-                  , gpsLongitude = Exif.parseValue "exif-ifd3-GPSLongitude"
-                                                   Exif.parseDoubleList
-                                                   headers
-                  , gpsLongitudeRef =
-                        Exif.parseValue "exif-ifd3-GPSLongitudeRef"
-                                        Exif.parseString
-                                        headers
-                  , dateTimeOriginal =
-                        Exif.parseValue "exif-ifd2-DateTimeOriginal"
-                                        Exif.parseString
-                                        headers
-                  , subSecTimeOriginal =
-                        Exif.parseValue "exif-ifd2-SubSecTimeOriginal"
-                                        Exif.parseString
-                                        headers
-                  , offsetTimeOriginal =
-                        Exif.parseValue "exif-ifd2-OffsetTimeOriginal"
-                                        Exif.parseString
-                                        headers
-                  , dateTime = Exif.parseValue "exif-ifd0-DateTime"
-                                               Exif.parseString
-                                               headers
-                  , subSecTime = Exif.parseValue "exif-ifd2-SubSecTime"
-                                                 Exif.parseString
-                                                 headers
-                  , offsetTime = Exif.parseValue "exif-ifd2-OffsetTime"
-                                                 Exif.parseString
-                                                 headers
-                  , dateTimeDigitized =
-                        Exif.parseValue "exif-ifd2-DateTimeDigitized"
-                                        Exif.parseString
-                                        headers
-                  , subSecTimeDigitized =
-                        Exif.parseValue "exif-ifd2-SubSecTimeDigitized"
-                                        Exif.parseString
-                                        headers
-                  , offsetTimeDigitized =
-                        Exif.parseValue "exif-ifd2-OffsetTimeDigitized"
-                                        Exif.parseString
-                                        headers
-                  , orientation = Exif.parseValue "exif-ifd0-Orientation"
-                                                  Exif.parseInt
-                                                  headers
-                  , uniqueCameraModel =
-                        Exif.parseValue "exif-ifd0-UniqueCameraModel"
-                                        Exif.parseString
-                                        headers
-                  , localizedCameraModel =
-                        Exif.parseValue "exif-ifd0-LocalizedCameraModel"
-                                        Exif.parseString
-                                        headers
-                  , model = Exif.parseValue "exif-ifd0-Model"
-                                            Exif.parseString
-                                            headers
-                  }
+metadataFromFile = Exif.exif
 
 utcDateFromMetadata :: Metadata -> Maybe String
 utcDateFromMetadata metadata = (date <|> (date' <|> date''))

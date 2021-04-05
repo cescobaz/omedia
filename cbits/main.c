@@ -22,9 +22,7 @@ int main(int argc, char **argv) {
   printf("ofilename %s\n", ofilename);
   Metadata *metadata = NULL;
   int result = exif(filename, &metadata);
+  print_exif_metadata(metadata);
   free_exif(&metadata);
-  printf("sizeof(void*) = %lu\n", sizeof(void *));
-  printf("sizeof(void**) = %lu\n", sizeof(void **));
-  printf("sizeof(char*) = %lu\n", sizeof(char *));
   return thumbnail(filename, ofilename, 256, NULL, NULL);
 }

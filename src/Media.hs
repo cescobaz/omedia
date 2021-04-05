@@ -43,7 +43,7 @@ data Metadata =
              , gpsLongitude :: Maybe [Double]
              , gpsLongitudeRef :: Maybe String
              , gpsAltitude :: Maybe Double
-             , gpsAltitudeRef :: Maybe String
+             , gpsAltitudeRef :: Maybe Int
              }
     deriving ( Eq, Show, Generic )
 
