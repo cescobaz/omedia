@@ -20,15 +20,11 @@ int main(int argc, char **argv) {
   }
   printf("filename %s\n", filename);
   printf("ofilename %s\n", ofilename);
-  void **metadata = NULL;
-  int count = 0;
-  int result = exif(filename, &metadata, &count);
-  int max = count * 2;
-  for (int i = 0; i < max; i += 2) {
-    char *value = metadata[i + 1];
-    printf("exif %s = %s\n", (char *)metadata[i], value);
-  }
-  free_exif(&metadata, count);
-  printf("sizeof(void*) = %lu\n", sizeof(void **));
+  Metadata *metadata = NULL;
+  int result = exif(filename, &metadata);
+  free_exif(&metadata);
+  printf("sizeof(void*) = %lu\n", sizeof(void *));
+  printf("sizeof(void**) = %lu\n", sizeof(void **));
+  printf("sizeof(char*) = %lu\n", sizeof(char *));
   return thumbnail(filename, ofilename, 256, NULL, NULL);
 }
