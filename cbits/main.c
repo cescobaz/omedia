@@ -21,8 +21,11 @@ int main(int argc, char **argv) {
   printf("filename %s\n", filename);
   printf("ofilename %s\n", ofilename);
   Metadata *metadata = NULL;
-  int result = exif(filename, &metadata);
-  print_exif_metadata(metadata);
-  free_exif(&metadata);
+  int result = exif_read_from_file(filename, &metadata);
+  if (result != 0) {
+    return result;
+  }
+  exif_print_metadata(metadata);
+  exif_free(&metadata);
   return thumbnail(filename, ofilename, 256, NULL, NULL);
 }

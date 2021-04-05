@@ -12,10 +12,10 @@ import           Foreign.C.Types
 
 import           Media             ( Metadata(..) )
 
-foreign import ccall unsafe "oexif.h exif" c_exif
+foreign import ccall unsafe "oexif.h exif_read_from_file" c_exif_read_from_file
         :: CString -> Ptr (Ptr Metadata) -> IO CInt
 
-foreign import ccall unsafe "oexif.h free_exif" c_free_exif
+foreign import ccall unsafe "oexif.h exif_free" c_exif_free
         :: Ptr (Ptr Metadata) -> IO ()
 
 checkRC :: String -> CInt -> IO ()
@@ -28,6 +28,7 @@ exif filePath =
     withCString filePath
                 (\cFilePath ->
                  alloca (\ptr -> do
-                             c_exif cFilePath ptr >>= checkRC "exif"
-                             finally (peek ptr >>= peek) (c_free_exif ptr)))
+                             c_exif_read_from_file cFilePath ptr
+                                 >>= checkRC "exif"
+                             finally (peek ptr >>= peek) (c_exif_free ptr)))
 

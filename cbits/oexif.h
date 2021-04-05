@@ -25,8 +25,8 @@ typedef struct Metadata {
   int8_t *gpsAltitudeRef;
 } Metadata;
 
-int exif(char *filename, Metadata **out);
+int exif_read_from_file(char *filename, Metadata **out);
 
-void free_exif(Metadata **metadata);
+void exif_free(Metadata **metadata);
 
-void print_exif_metadata(Metadata *metadata);
+void exif_print_metadata(Metadata *metadata);

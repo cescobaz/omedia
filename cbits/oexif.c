@@ -160,7 +160,7 @@ void content(ExifContent *content, Metadata *data) {
   }
 }
 
-int exif(char *filename, Metadata **out) {
+int exif_read_from_file(char *filename, Metadata **out) {
   VipsImage *image = vips_image_new_from_file(filename, NULL);
   if (image == NULL) {
     return -1;
@@ -204,12 +204,70 @@ int exif(char *filename, Metadata **out) {
   g_object_unref(image);
   return 0;
 }
-void free_exif(Metadata **out) {
+void exif_free(Metadata **out) {
+  Metadata *metadata = *out;
+  if (metadata->dateTime) {
+    free(metadata->dateTime);
+  }
+  if (metadata->subSecTime) {
+    free(metadata->subSecTime);
+  }
+  if (metadata->offsetTime) {
+    free(metadata->offsetTime);
+  }
+  if (metadata->orientation) {
+    free(metadata->orientation);
+  }
+  if (metadata->uniqueCameraModel) {
+    free(metadata->uniqueCameraModel);
+  }
+  if (metadata->localizedCameraModel) {
+    free(metadata->localizedCameraModel);
+  }
+  if (metadata->model) {
+    free(metadata->model);
+  }
+  if (metadata->dateTimeOriginal) {
+    free(metadata->dateTimeOriginal);
+  }
+  if (metadata->subSecTimeOriginal) {
+    free(metadata->subSecTimeOriginal);
+  }
+  if (metadata->offsetTimeOriginal) {
+    free(metadata->offsetTimeOriginal);
+  }
+  if (metadata->dateTimeDigitized) {
+    free(metadata->dateTimeDigitized);
+  }
+  if (metadata->subSecTimeDigitized) {
+    free(metadata->subSecTimeDigitized);
+  }
+  if (metadata->offsetTimeDigitized) {
+    free(metadata->offsetTimeDigitized);
+  }
+  if (metadata->gpsLatitude) {
+    free(metadata->gpsLatitude);
+  }
+  if (metadata->gpsLatitudeRef) {
+    free(metadata->gpsLatitudeRef);
+  }
+  if (metadata->gpsLongitude) {
+    free(metadata->gpsLongitude);
+  }
+  if (metadata->gpsLongitudeRef) {
+    free(metadata->gpsLongitudeRef);
+  }
+  if (metadata->gpsAltitude) {
+    free(metadata->gpsAltitude);
+  }
+  if (metadata->gpsAltitudeRef) {
+    free(metadata->gpsAltitudeRef);
+  }
   free(*out);
   *out = NULL;
 }
 
-void print_exif_metadata(Metadata *metadata) {
+void exif_print_metadata(Metadata *metadata) {
   if (metadata->byteOrder) {
     printf("byteOrder = %c\n", metadata->byteOrder);
   }
