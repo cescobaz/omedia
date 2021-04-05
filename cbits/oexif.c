@@ -4,7 +4,7 @@
 #include "oexif.h"
 
 uint16_t reverse16(uint16_t value) {
-  return (((value & 0x00FF) << 8) | ((value & 0xFF00) >> 8));
+  return (((value << 8) & 0xFF00) | ((value >> 8) & 0x00FF));
 }
 
 uint32_t reverse32(uint32_t value) {
@@ -12,14 +12,14 @@ uint32_t reverse32(uint32_t value) {
          ((value << 8) & 0x00FF0000) | ((value << 24) & 0xFF000000);
 }
 uint64_t reverse64(uint64_t value) {
-  return (((value & 0x00000000000000FF) << 56) |
-          ((value & 0x000000000000FF00) << 40) |
-          ((value & 0x0000000000FF0000) << 24) |
-          ((value & 0x00000000FF000000) << 8) |
-          ((value & 0x000000FF00000000) >> 8) |
-          ((value & 0x0000FF0000000000) >> 24) |
-          ((value & 0x00FF000000000000) >> 40) |
-          ((value & 0xFF00000000000000) >> 56));
+  return (((value >> 56) & 0x00000000000000FF) |
+          ((value >> 40) & 0x000000000000FF00) |
+          ((value >> 24) & 0x0000000000FF0000) |
+          ((value >> 8) & 0x00000000FF000000) |
+          ((value << 8) & 0x000000FF00000000) |
+          ((value << 24) & 0x0000FF0000000000) |
+          ((value << 40) & 0x00FF000000000000) |
+          ((value << 56) & 0xFF00000000000000));
 }
 void stringEntry(ExifContent *content, uint tag, char **out) {
   if (!out) {
