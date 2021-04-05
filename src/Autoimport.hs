@@ -14,6 +14,6 @@ autoimport repository = do
     putStrLn $ "autoimport on files " ++ show files
     results <- Import.importMedia repository files
     print results
-    threadDelay 3000000
+    threadDelay 5000000
     autoimport repository
 
