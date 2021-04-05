@@ -45,7 +45,7 @@ int anyEntry(ExifContent *content, uint tag, void **out, size_t size, int count,
   *out = calloc(count, size);
   size_t copySize = MIN(entry->size, count * size);
   if (countOut) {
-    *countOut = copySize / count;
+    *countOut = copySize / size;
   }
   memcpy(*out, entry->data, copySize);
   if (byteOrder == 'l' || size == 1) {
